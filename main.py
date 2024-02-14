@@ -18,7 +18,7 @@ import argparse
 
 #our first step is going to be to load in and pretrain the model we'll hopefully be using
 gpu = torch.cuda.is_available()
-print("HAS GPU: ", gpu)
+print("HAS CUDA: ", gpu)
 device = 'cpu'
 if gpu:
     device = 'cuda'
@@ -26,9 +26,8 @@ if gpu:
 
 model = torch.load('Data/smilesPretrained.pkl', map_location=device)
 print("hello world!")
-df = pd.read_table('Data/chembl_24_1_chemreps.txt.gz')
-df.head()
 
+df = pd.read_table('Data/chembl_24_1_chemreps.txt.gz')
 smiles  = df['canonical_smiles'].values
 to_drop = []
 for i,sm in enumerate(smiles):
@@ -57,8 +56,12 @@ mask_index = 4
 vocab = WordVocab.load_vocab('Data/vocab.pkl')
 
 trfm = TrfmSeq2seq(len(vocab), 256, len(vocab), 4)
-trfm.load_state_dict(torch.load('Data/trfm_12_23000.pkl', map_location=torch.device('cpu')), strict=False)
+trfm.load_state_dict(torch.load('Data/smilesPretrained.pkl', map_location=torch.device('cpu')), strict=False)
 trfm.eval()
 print(trfm)
 #print("input size = ", str(len(vocab)), ", 256, ", str(len(vocab)), ", 4")
 print("see you later world")
+
+#decrease this learning rate if the model performs poorly
+learning_rate = .01
+optimizer = optim.Adam(trfm.parameters(), lr = learning_rate)
