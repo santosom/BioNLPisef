@@ -40,6 +40,9 @@ learning_rate = .01
 optimizer = optim.Adam(trfm.parameters(), lr = learning_rate)
 df_train = pd.read_csv('Data/RB_train.csv')
 df_val = pd.read_csv('Data/RB_val.csv')
+
+#this feels so random...?
+rates = 2**np.arange(7)/80
 def get_inputs(sm):
     seq_len = 220
     sm = sm.split()
@@ -94,7 +97,7 @@ def train():
     print(smiles_val.shape)
     labels_train, labels_val = df_train['Class'].values, df_val['Class'].values
 
-    testBiodegrade(smiles_train, smiles_val, labels_train, labels_val)
+    print(testBiodegrade(smiles_train, smiles_val, labels_train, labels_val, rates, 20))
 
 
 
