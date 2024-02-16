@@ -23,7 +23,7 @@ device = 'cpu'
 if gpu:
     device = 'cuda'
 
-
+#rename the pretrained model downloaded from Google Drive to "smilesPretrained"
 model = torch.load('Data/smilesPretrained.pkl', map_location=device)
 print("hello world!")
 
@@ -43,10 +43,6 @@ df_dropped.head()
 
 df_dropped.to_csv('Data/chembl_24.csv', index=False)
 
-from pretrain_trfm import TrfmSeq2seq
-from build_vocab import WordVocab
-from utils import split
-
 pad_index = 0
 unk_index = 1
 eos_index = 2
@@ -56,15 +52,4 @@ mask_index = 4
 #vocab objects are objects that "maps each word in the problem context to a 0-based integer index, based on how common the word is" (Mccaffrey, 2021)
 #from build_vocab, load_vocab is a static method that loads a vocab pickle
 #build_vocab should take care of the basic vocab object set up for us
-vocab = WordVocab.load_vocab('Data/vocab.pkl')
 
-trfm = TrfmSeq2seq(len(vocab), 256, len(vocab), 4)
-trfm.load_state_dict(torch.load('Data/smilesPretrained.pkl', map_location=torch.device('cpu')), strict=False)
-trfm.eval()
-print(trfm)
-#print("input size = ", str(len(vocab)), ", 256, ", str(len(vocab)), ", 4")
-print("see you later world")
-
-#decrease this learning rate if the model performs poorly
-learning_rate = .01
-optimizer = optim.Adam(trfm.parameters(), lr = learning_rate)

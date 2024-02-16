@@ -71,6 +71,9 @@ class customSmilesDataset(Dataset):
 #please just let me upload to github
 #This is only the training+validation dataset
 
+def main():
+    prepareNewData()
+
 
 #need to put this in a tensor. before that, need to attach the correct labels for biodegradable and not
 #will also need to convert smiles into something useable....
