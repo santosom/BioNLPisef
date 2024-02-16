@@ -21,7 +21,7 @@ EOS = 2
 SOS = 3
 MASK = 4
 
-
+#oh boy positional encoding. this is just what it says on the tin
 class PositionalEncoding(nn.Module):
     "Implement the PE function. No batch support?"
 
@@ -43,7 +43,8 @@ class PositionalEncoding(nn.Module):
                          requires_grad=False)
         return self.dropout(x)
 
-
+#here's where the transformer model is actually defined
+#see the paper and our notes the actual structure of this
 class TrfmSeq2seq(nn.Module):
     def __init__(self, in_size, hidden_size, out_size, n_layers, dropout=0.1):
         super(TrfmSeq2seq, self).__init__()
@@ -52,8 +53,10 @@ class TrfmSeq2seq(nn.Module):
         self.embed = nn.Embedding(in_size, hidden_size)
         self.pe = PositionalEncoding(hidden_size, dropout)
         encoder_layer = nn.TransformerEncoderLayer(d_model=hidden_size, nhead=4)
+        #changed to an encoder-only model
         self.trfm = nn.TransformerEncoder(encoder_layer, n_layers)
-        self.out = nn.Softmax(2)
+        #downstream tasks in the original paper used "simple classification models"
+        self.out = nn.Linear(hidden_size, out_size)
 
     def forward(self, src):
         # src: (T,B)

@@ -8,6 +8,7 @@ import rdkit
 from rdkit import Chem
 from rdkit.Chem import Draw, MolFromSmiles, MolToSmiles
 import pickle
+import os
 
 from torch import optim
 from tqdm import tqdm

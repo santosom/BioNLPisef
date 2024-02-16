@@ -1,45 +1,49 @@
 import argparse
 import pickle
 from collections import Counter
-
+#NOTE: I don't think this is actually a Vocab object, like what's commonly used in Pytorch NLP problems. This is a custom object made seperately. We make vocab.pkl with this
+#Look at the lack of any import torch here
+# Why is this the only file in the entire project with comments.
+#The comments were originally in Japanese, just run through Google Translate. I used the transformer to figure out the transformer!
 
 class TorchVocab(object):
     """
-    :property freqs: collections.Counter, コーパス中の単語の出現頻度を保持するオブジェクト
-    :property stoi: collections.defaultdict, string → id の対応を示す辞書
-    :property itos: collections.defaultdict, id → string の対応を示す辞書
+    :property freqs: collections.Counter, An object that holds the frequency of occurrence of words in the corpus
+    :property stoi: collections.defaultdict, string → Dictionary showing ID correspondence
+    :property itos: collections.defaultdict, id → Dictionary of string mappings
     """
     def __init__(self, counter, max_size=None, min_freq=1, specials=['<pad>', '<oov>'],
                  vectors=None, unk_init=None, vectors_cache=None):
         """
-        :param counter: collections.Counter, データ中に含まれる単語の頻度を計測するためのcounter
-        :param max_size: int, vocabularyの最大のサイズ. Noneの場合は最大値なし. defaultはNone
-        :param min_freq: int, vocabulary中の単語の最低出現頻度. この数以下の出現回数の単語はvocabularyに加えられない.
-        :param specials: list of str, vocabularyにあらかじめ登録するtoken
-        :param vectors: list of vectors, 事前学習済みのベクトル. ex)Vocab.load_vectors
+        :param counter: collections.Counter, counter to measure the frequency of words included in the data
+        :param max_size: int, Maximum size of vocabulary. If None, there is no maximum value. Default is None
+        :param min_freq: int, Minimum frequency of occurrence of a word in the vocabulary. Words with occurrences less than this number will not be added to the vocabulary.
+        :param specials: list of str, token to be registered in the vocabulary in advance
+        :param vectors: list of vectors, Pretrained vectors. ex.) Vocab.load_vectors
         """
         self.freqs = counter
         counter = counter.copy()
         min_freq = max(min_freq, 1)
 
         self.itos = list(specials)
-        # special tokensの出現頻度はvocabulary作成の際にカウントされない
-        for tok in specials:
-            del counter[tok]
+        # special tokens, Frequency of occurrence is not counted when creating vocabulary
+        for token in specials:
+            del counter[token]
 
         max_size = None if max_size is None else max_size + len(self.itos)
 
-        # まず頻度でソートし、次に文字順で並び替える
+        # Sort first by frequency, then by letter order
         words_and_frequencies = sorted(counter.items(), key=lambda tup: tup[0])
         words_and_frequencies.sort(key=lambda tup: tup[1], reverse=True)
         
-        # 出現頻度がmin_freq未満のものはvocabに加えない
+        # Items whose appearance frequency is less than min_freq are not added to vocab.
+        # there's a frequency threshold as defined by min_freq
         for word, freq in words_and_frequencies:
             if freq < min_freq or len(self.itos) == max_size:
                 break
             self.itos.append(word)
 
-        # dictのk,vをいれかえてstoiを作成する
+        # Create stoi by replacing k and v in dict
         self.stoi = {tok: i for i, tok in enumerate(self.itos)}
 
         self.vectors = None
@@ -73,7 +77,7 @@ class TorchVocab(object):
                 self.stoi[w] = len(self.itos) - 1
 
 
-class Vocab(TorchVocab):
+class Vocab(TorchVocab): #the WordVocab class below should inherit all of these functions? and this class should inherit functions from the above class
     def __init__(self, counter, max_size=None, min_freq=1):
         self.pad_index = 0
         self.unk_index = 1
@@ -83,10 +87,13 @@ class Vocab(TorchVocab):
         super().__init__(counter, specials=["<pad>", "<unk>", "<eos>", "<sos>", "<mask>"], max_size=max_size, min_freq=min_freq)
 
     # override用
+    #i believe this creates a list of the passed values?
+    # or this doesn't return anything. the comment above indicates it's a required def with no real purpose.
     def to_seq(self, sentece, seq_len, with_eos=False, with_sos=False) -> list:
         pass
 
     # override用
+    #this shouldn't return anything. the comment above indicates it's a required def with no real purpose.
     def from_seq(self, seq, join=False, with_pad=False):
         pass
 
@@ -100,7 +107,7 @@ class Vocab(TorchVocab):
             pickle.dump(self, f)
 
 
-# テキストファイルからvocabを作成する
+# create vocab from text file
 class WordVocab(Vocab):
     def __init__(self, texts, max_size=None, min_freq=1):
         print("Building Vocab")
@@ -149,6 +156,7 @@ class WordVocab(Vocab):
     @staticmethod
     def load_vocab(vocab_path: str) -> 'WordVocab':
         with open(vocab_path, "rb") as f:
+            #i believe this returns a Vocab object
             return pickle.load(f)
 
 

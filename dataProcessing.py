@@ -9,6 +9,7 @@ from torch.utils.data import Dataset
 
 import pandas as pd
 import torch
+import os
 def prepareNewData():
     biodegradable_smiles = pd.read_excel('Data/bioDataset.xlsx', sheet_name="Train+Test")
     test_bsms = pd.read_excel('Data/bioDataset.xlsx', sheet_name="External validation")
