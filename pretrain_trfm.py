@@ -72,12 +72,12 @@ class TrfmSeq2seq(nn.Module):
         embedded = self.embed(src)  # (T,B,H)
         embedded = self.pe(embedded)  # (T,B,H)
         output = embedded
-        for i in range(self.trfm.encoder.num_layers - 1):
-            output = self.trfm.encoder.layers[i](output, None)  # (T,B,H)
+        for i in range(self.trfm.num_layers - 1):
+            output = self.trfm.layers[i](output, None)  # (T,B,H)
         penul = output.detach().numpy()
-        output = self.trfm.encoder.layers[-1](output, None)  # (T,B,H)
-        if self.trfm.encoder.norm:
-            output = self.trfm.encoder.norm(output)  # (T,B,H)
+        output = self.trfm.layers[-1](output, None)  # (T,B,H)
+        if self.trfm.norm:
+            output = self.trfm.norm(output)  # (T,B,H)
         output = output.detach().numpy()
         # mean, max, first*2
         return np.hstack([np.mean(output, axis=0), np.max(output, axis=0), output[0, :, :], penul[0, :, :]])  # (B,4H)
@@ -88,7 +88,7 @@ class TrfmSeq2seq(nn.Module):
         if batch_size <= 100:
             return self._encode(src)
         else:  # Batch is too large to load
-            print('There are {:d} molecules. It will take a little time.'.format(batch_size))
+            print('WE ARE ENCODING. LETS GOOOOO. Currently running {:d} molecules.'.format(batch_size))
             st, ed = 0, 100
             out = self._encode(src[:, st:ed])  # (B,4H)
             while ed < batch_size:
