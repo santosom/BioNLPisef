@@ -10,6 +10,7 @@ from rdkit.Chem import Draw, MolFromSmiles, MolToSmiles
 import pickle
 import os
 
+from sklearn.metrics import roc_auc_score
 from torch import optim
 from tqdm import tqdm
 from torch.utils.data import DataLoader
@@ -30,16 +31,15 @@ mask_index = 4
 
 vocab = WordVocab.load_vocab('data/vocab.pkl')
 
+print("hello world")
 trfm = TrfmSeq2seq(len(vocab), 256, len(vocab), 4)
 trfm.load_state_dict(torch.load('Data/smilesPretrained.pkl', map_location=torch.device('cpu')), strict=False)
-trfm.eval()
-print(trfm)
-#print("input size = ", str(len(vocab)), ", 256, ", str(len(vocab)), ", 4")
-print("see you later world")
 
 #decrease this learning rate if the model performs poorly
 learning_rate = .01
 optimizer = optim.Adam(trfm.parameters(), lr = learning_rate)
+df_train = pd.read_csv('Data/RB_train.csv')
+df_val = pd.read_csv('Data/RB_val.csv')
 def get_inputs(sm):
     seq_len = 220
     sm = sm.split()
@@ -61,47 +61,46 @@ def get_array(smiles):
         x_seg.append(b)
     return torch.tensor(x_id), torch.tensor(x_seg)
 
-def ablation_hiv(X, X_test, y, y_test, rate, n_repeats):
+def testBiodegrade(X_train, X_val, Y_train, Y_val, rate, n_repeats):
     auc = np.empty(n_repeats)
     for i in range(n_repeats):
         clf = MLPClassifier(max_iter=1000)
-        #get rid of this section. train_test_split already established.
-        if rate==1:
-            X_train, y_train = X,y
-        else:
-            X_train, _, y_train, __ = train_test_split(X, y, test_size=1-rate, stratify=y)
-        clf.fit(X_train, y_train)
-        y_score = clf.predict_proba(X_test)
-        auc[i] = roc_auc_score(y_test, y_score[:,1])
+        clf.fit(X_train, Y_train)
+        y_score = clf.predict_proba(X_val)
+        auc[i] = roc_auc_score(Y_val, y_score[:, 1])
     ret = {}
     ret['auc mean'] = np.mean(auc)
     ret['auc std'] = np.std(auc)
     return ret
 
 #also need to load in *trained* model. with state_dict() and such
-def train(trfm, learning_rate, opt, epochs, batch_size):
-    df_train = pd.read_csv('Data/RB_train.csv')
-    df_val = pd.read_csv('Data/RB_val.csv')
+#trfm, learning_rate, opt, epochs, batch_size
+def train():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     total_loss = 0
-    labels_ids = {'RB': 0, 'NRB': 1}
-    n_labels = len(labels_ids)
+    #labels_ids = {'RB': 0, 'NRB': 1}
+    #n_labels = len(labels_ids)
     trfm.train()
 
     #encode (?)
-    x_split = [split(sm) for sm in df_train['smiles'].values]
-    xid, _ = get_array(x_split)
-    X = trfm.encode(torch.t(xid))
-    print(X.shape)
-    x_split = [split(sm) for sm in df_val['smiles'].values]
-    xid, _ = get_array(x_split)
-    X_test = trfm.encode(torch.t(xid))
-    print(X_test.shape)
-    y, y_test = df_train['HIV_active'].values, df_val['HIV_active'].values
+    smiles_split = [split(sm) for sm in df_train['processed_smiles'].values]
+    smilesID, _ = get_array(smiles_split)
+    smiles_train = trfm.encode(torch.t(smilesID))
+    print(smiles_train.shape)
+    #x is the smiles
+    smiles_split = [split(sm) for sm in df_val['processed_smiles'].values]
+    smilesID, _ = get_array(smiles_split)
+    smiles_val = trfm.encode(torch.t(smilesID))
+    print(smiles_val.shape)
+    labels_train, labels_val = df_train['Class'].values, df_val['Class'].values
+
+    testBiodegrade(smiles_train, smiles_val, labels_train, labels_val)
+
+
 
     #put into a dataset
 
     #define the training loop
 
-
+train()
 #def eval():

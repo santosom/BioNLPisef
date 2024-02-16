@@ -41,6 +41,18 @@ def prepareNewData():
             sm = sm.replace(b, a)
         pro_sms.append(sm)
 
+    _class =  dropped_dataset['Class']
+    numberedLabels = []
+    for label in _class:
+        #replace RB with 1, NRB with 0. Classes now have numbers
+        if (label == 'RB'):
+            numberedLabels.append(1)
+        else:
+            numberedLabels.append(0)
+    dropped_dataset = dropped_dataset.drop('Class', axis=1)
+    dropped_dataset.insert(1, 'Class', numberedLabels, True)
+
+
     # NOTE: might have to return to this and create an empty/random array for chembl_id if training goes poorly the first time, because that's something the original dataset has that we don't
     print('processed smiles len: ', len(pro_sms))
     dropped_dataset.insert(1, 'processed_smiles', pro_sms, True)
@@ -72,7 +84,10 @@ class customSmilesDataset(Dataset):
 #This is only the training+validation dataset
 
 def main():
+    print("hello world")
     prepareNewData()
+
+prepareNewData()
 
 
 #need to put this in a tensor. before that, need to attach the correct labels for biodegradable and not
