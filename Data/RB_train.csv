@@ -1,0 +1,219 @@
+,Smiles,processed_smiles,Class
+837,CCCCCCC,C C C C C C C,1
+838,C1CO1,C 1 C O 1,1
+839,Cc1ccccc1,C c 1 c c c c c 1,1
+840,CCCCNCCCC,C C C C N C C C C,1
+841,CC(C)=CCCC(C)(O)C=C,C C ( C ) = C C C C ( C ) ( O ) C = C,1
+842,CCCCOCCOCCO,C C C C O C C O C C O,1
+843,CCCC=O,C C C C = O,1
+844,CC(=O)CC(C)(C)O,C C ( = O ) C C ( C ) ( C ) O,1
+845,COC(=O)CCCC(=O)OC,C O C ( = O ) C C C C ( = O ) O C,1
+846,CCCCC(CC)COC(=O)\C=C\C(=O)OCC(CC)CCCC,C C C C C ( C C ) C O C ( = O ) \ C = C \ C ( = O ) O C C ( C C ) C C C C,1
+847,CCCCCCC(O)CCCCCCCCCCC(O)=O,C C C C C C C ( O ) C C C C C C C C C C C ( O ) = O,1
+848,CCCCCCCCCCCCCCCCCCC#N,C C C C C C C C C C C C C C C C C C C # N,1
+849,ClC(Cl)c1ccccc1,Cl C ( Cl ) c 1 c c c c c 1,1
+850,COc1ccccc1O,C O c 1 c c c c c 1 O,1
+851,OCc1ccccc1,O C c 1 c c c c c 1,1
+852,COc1ccc(C=O)cc1OC,C O c 1 c c c ( C = O ) c c 1 O C,1
+853,Cc1ccc(cc1)C(O)=O,C c 1 c c c ( c c 1 ) C ( O ) = O,1
+854,Cc1cccc(c1)C(O)=O,C c 1 c c c c ( c 1 ) C ( O ) = O,1
+855,OCCOC(=O)c1ccc(cc1)C(=O)OCCO,O C C O C ( = O ) c 1 c c c ( c c 1 ) C ( = O ) O C C O,1
+856,Oc1ccc(cc1)C#N,O c 1 c c c ( c c 1 ) C # N,1
+857,Cc1ccc(cc1)[S](O)(=O)=O,C c 1 c c c ( c c 1 ) [ S ] ( O ) ( = O ) = O,1
+858,COc1ccc(C=O)cc1,C O c 1 c c c ( C = O ) c c 1,1
+859,CCCCCC1C(CCC1=O)CC(=O)OC,C C C C C C 1 C ( C C C 1 = O ) C C ( = O ) O C,1
+860,[nH]1ccnc1,[ n H ] 1 c c n c 1,1
+861,Oc1cccnc1,O c 1 c c c n c 1,1
+862,CCCCC=C,C C C C C = C,1
+863,CC(C)Br,C C ( C ) Br,1
+864,CCCCN,C C C C N,1
+865,CCCCCCCCCCCCCCCCO,C C C C C C C C C C C C C C C C O,1
+866,COCCO,C O C C O,1
+867,CCCOC(C)=O,C C C O C ( C ) = O,1
+868,CCCCCCCC\C=C/CCCCCCCCCCCC(N)=O,C C C C C C C C \ C = C / C C C C C C C C C C C C ( N ) = O,1
+869,OC(=O)CCCCC(O)=O,O C ( = O ) C C C C C ( O ) = O,1
+870,COCCOC(=O)C=C,C O C C O C ( = O ) C = C,1
+871,CC(O)COC(=O)C(C)=C,C C ( O ) C O C ( = O ) C ( C ) = C,1
+872,C/C=C/C=C/C(O)=O,C / C = C / C = C / C ( O ) = O,1
+873,OC(=O)CC(=C)C(O)=O,O C ( = O ) C C ( = C ) C ( O ) = O,1
+874,CCCCOC(=O)CC(C)=O,C C C C O C ( = O ) C C ( C ) = O,1
+875,Nc1ccccc1,N c 1 c c c c c 1,1
+876,CC(=C)C(=O)OCc1ccccc1,C C ( = C ) C ( = O ) O C c 1 c c c c c 1,1
+877,OCCc1ccccc1,O C C c 1 c c c c c 1,1
+878,C1OC1c2ccccc2,C 1 O C 1 c 2 c c c c c 2,1
+879,OC(=O)CNC(=O)c1ccccc1,O C ( = O ) C N C ( = O ) c 1 c c c c c 1,1
+880,CNc1ccccc1C(O)=O,C N c 1 c c c c c 1 C ( O ) = O,1
+881,CC1=CCC(CC1)C(C)(C)O,C C 1 = C C C ( C C 1 ) C ( C ) ( C ) O,1
+882,CCC(=O)c1ccccc1,C C C ( = O ) c 1 c c c c c 1,1
+883,CC(=O)C1C(=O)OC(=CC1=O)C,C C ( = O ) C 1 C ( = O ) O C ( = C C 1 = O ) C,1
+884,OC[C@@H](O)[C@H](O)[C@@H](O)CO,O C [ C @ @ H ] ( O ) [ C @ H ] ( O ) [ C @ @ H ] ( O ) C O,1
+885,OC(c1ccccc1)C(=O)c2ccccc2,O C ( c 1 c c c c c 1 ) C ( = O ) c 2 c c c c c 2,1
+886,NCCC(O)=O,N C C C ( O ) = O,1
+887,CCCCCCCCCl,C C C C C C C C Cl,1
+888,CCOCCO,C C O C C O,1
+889,CCCCCCCC\C=C/CCCCCCCC(O)=O,C C C C C C C C \ C = C / C C C C C C C C ( O ) = O,1
+890,CCCCCCCCCCCC(=O)OC,C C C C C C C C C C C C ( = O ) O C,1
+891,OC(=O)CCC(O)=O,O C ( = O ) C C C ( O ) = O,1
+892,OCCOC(=O)C=C,O C C O C ( = O ) C = C,1
+893,OC(=O)CC(O)(CC(O)=O)C(O)=O,O C ( = O ) C C ( O ) ( C C ( O ) = O ) C ( O ) = O,1
+894,OC(C(O)C(O)=O)C(O)=O,O C ( C ( O ) C ( O ) = O ) C ( O ) = O,1
+895,CCC(C)O,C C C ( C ) O,1
+896,OC(=O)c1ccc(cc1)C(O)=O,O C ( = O ) c 1 c c c ( c c 1 ) C ( O ) = O,1
+897,N#CCc1ccccc1,N # C C c 1 c c c c c 1,1
+898,CC(=C)C1CCC(=CC1)C,C C ( = C ) C 1 C C C ( = C C 1 ) C,1
+899,CC(=C)C(=O)OC1CCCCC1,C C ( = C ) C ( = O ) O C 1 C C C C C 1,1
+900,CNCCO,C N C C O,1
+901,CC(O)CNCC(C)O,C C ( O ) C N C C ( C ) O,1
+902,COCCOCCOCCO,C O C C O C C O C C O,1
+903,OC(=O)CCl,O C ( = O ) C Cl,1
+904,CCCCCCCCOC(=O)c1ccccc1C(=O)OCCCCCCCC,C C C C C C C C O C ( = O ) c 1 c c c c c 1 C ( = O ) O C C C C C C C C,1
+905,O=C(OC1CCCCC1)c2ccccc2C(=O)OC3CCCCC3,O = C ( O C 1 C C C C C 1 ) c 2 c c c c c 2 C ( = O ) O C 3 C C C C C 3,1
+906,Oc1ccc2ccccc2c1,O c 1 c c c 2 c c c c c 2 c 1,1
+907,c1ccncc1,c 1 c c n c c 1,1
+908,CCCCCCCCCCCC(=O)OCC(O)C1OCC(O)C1O,C C C C C C C C C C C C ( = O ) O C C ( O ) C 1 O C C ( O ) C 1 O,1
+909,FC(F)(F)C1(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C1(F)C(F)(F)F,F C ( F ) ( F ) C 1 ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C 1 ( F ) C ( F ) ( F ) F,0
+910,ClC1=C(Cl)[C@@]2(Cl)[C@H]3[C@H]4C[C@H]([C@@H]5O[C@H]45)[C@H]3[C@]1(Cl)C2(Cl)Cl,Cl C 1 = C ( Cl ) [ C @ @ ] 2 ( Cl ) [ C @ H ] 3 [ C @ H ] 4 C [ C @ H ] ( [ C @ @ H ] 5 O [ C @ H ] 4 5 ) [ C @ H ] 3 [ C @ ] 1 ( Cl ) C 2 ( Cl ) Cl,0
+911,Clc1ccc(cc1)C(c2ccc(Cl)cc2)C(Cl)(Cl)Cl,Cl c 1 c c c ( c c 1 ) C ( c 2 c c c ( Cl ) c c 2 ) C ( Cl ) ( Cl ) Cl,0
+912,CC(C)(C)c1cc(n2nc3ccccc3n2)c(O)c(c1)C(C)(C)C,C C ( C ) ( C ) c 1 c c ( n 2 n c 3 c c c c c 3 n 2 ) c ( O ) c ( c 1 ) C ( C ) ( C ) C,0
+913,CC(C)(C)c1cc(n2nc3ccc(Cl)cc3n2)c(O)c(c1)C(C)(C)C,C C ( C ) ( C ) c 1 c c ( n 2 n c 3 c c c ( Cl ) c c 3 n 2 ) c ( O ) c ( c 1 ) C ( C ) ( C ) C,0
+914,ClC1C=CC2C1C3(Cl)C(=C(Cl)C2(Cl)C3(Cl)Cl)Cl,Cl C 1 C = C C 2 C 1 C 3 ( Cl ) C ( = C ( Cl ) C 2 ( Cl ) C 3 ( Cl ) Cl ) Cl,0
+915,ClC1C(Cl)C(Cl)C(Cl)C(Cl)C1Cl,Cl C 1 C ( Cl ) C ( Cl ) C ( Cl ) C ( Cl ) C 1 Cl,0
+916,[O-][N+](=O)C(Cl)(Cl)Cl,[ O- ] [ N+ ] ( = O ) C ( Cl ) ( Cl ) Cl,0
+917,CN(C)CCOCCN(C)C,C N ( C ) C C O C C N ( C ) C,0
+918,CNC(=O)NC,C N C ( = O ) N C,0
+919,NC(=O)C(Br)(Br)C#N,N C ( = O ) C ( Br ) ( Br ) C # N,0
+920,Nc1ccc(cc1Cl)[N+]([O-])=O,N c 1 c c c ( c c 1 Cl ) [ N+ ] ( [ O- ] ) = O,0
+921,COc1cc(ccc1N)[N+]([O-])=O,C O c 1 c c ( c c c 1 N ) [ N+ ] ( [ O- ] ) = O,0
+922,COc1ccc(OC)c(Cl)c1,C O c 1 c c c ( O C ) c ( Cl ) c 1,0
+923,CSc1ccc(O)cc1C,C S c 1 c c c ( O ) c c 1 C,0
+924,Nc1ccc(cc1C#N)[N+]([O-])=O,N c 1 c c c ( c c 1 C # N ) [ N+ ] ( [ O- ] ) = O,0
+925,Fc1ccccc1F,F c 1 c c c c c 1 F,0
+926,C1OC1CN(CC2CO2)c3ccc(Cc4ccc(cc4)N(CC5CO5)CC6CO6)cc3,C 1 O C 1 C N ( C C 2 C O 2 ) c 3 c c c ( C c 4 c c c ( c c 4 ) N ( C C 5 C O 5 ) C C 6 C O 6 ) c c 3,0
+927,O=C1N(CC2CO2)C(=O)N(CC3CO3)C(=O)N1CC4CO4,O = C 1 N ( C C 2 C O 2 ) C ( = O ) N ( C C 3 C O 3 ) C ( = O ) N 1 C C 4 C O 4,0
+928,COc1c2occc2cc3C=CC(=O)Oc13,C O c 1 c 2 o c c c 2 c c 3 C = C C ( = O ) O c 1 3,0
+929,CC1=CCC2C(C1)C(=O)OC2=O,C C 1 = C C C 2 C ( C 1 ) C ( = O ) O C 2 = O,0
+930,OCC(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)F,O C C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) F,0
+931,CCCCC(CC)CO[P](O)(=O)CC(CC)CCCC,C C C C C ( C C ) C O [ P ] ( O ) ( = O ) C C ( C C ) C C C C,0
+932,CCCC[Sn](=O)CCCC,C C C C [ S n ] ( = O ) C C C C,0
+933,Cc1cc(C)cc(C)c1,C c 1 c c ( C ) c c ( C ) c 1,0
+934,ClCCc1ccccc1,Cl C C c 1 c c c c c 1,0
+935,Cc1ccccc1Cl,C c 1 c c c c c 1 Cl,0
+936,Cc1ccc(Cl)cc1,C c 1 c c c ( Cl ) c c 1,0
+937,CC(=C)c1ccc(Cl)cc1,C C ( = C ) c 1 c c c ( Cl ) c c 1,0
+938,CCN(CC)c1ccccc1,C C N ( C C ) c 1 c c c c c 1,0
+939,Nc1ccc(Cl)c(Cl)c1,N c 1 c c c ( Cl ) c ( Cl ) c 1,0
+940,Nc1c(Cl)cc(Cl)cc1Cl,N c 1 c ( Cl ) c c ( Cl ) c c 1 Cl,0
+941,O=NN(c1ccccc1)c2ccccc2,O = N N ( c 1 c c c c c 1 ) c 2 c c c c c 2,0
+942,CCCCCCCCCc1cccc(O)c1CCCCCCCCC,C C C C C C C C C c 1 c c c c ( O ) c 1 C C C C C C C C C,0
+943,Oc1ccc(cc1[N+]([O-])=O)[N+]([O-])=O,O c 1 c c c ( c c 1 [ N+ ] ( [ O- ] ) = O ) [ N+ ] ( [ O- ] ) = O,0
+944,Cc1cc(Cl)ccc1O,C c 1 c c ( Cl ) c c c 1 O,0
+945,Oc1cc(Cl)c(Cl)cc1Cl,O c 1 c c ( Cl ) c ( Cl ) c c 1 Cl,0
+946,Oc1cc(Cl)c(Br)cc1Cl,O c 1 c c ( Cl ) c ( Br ) c c 1 Cl,0
+947,BrC(Br)c1ccccc1OCC2CO2,Br C ( Br ) c 1 c c c c c 1 O C C 2 C O 2,0
+948,O=C(O\N=C1\C=C\C(C=C1)=N/OC(=O)c2ccccc2)c3ccccc3,O = C ( O \ N = C 1 \ C = C \ C ( C = C 1 ) = N / O C ( = O ) c 2 c c c c c 2 ) c 3 c c c c c 3,0
+949,CC(C)(OOC(C)(C)c1ccccc1)c2ccccc2,C C ( C ) ( O O C ( C ) ( C ) c 1 c c c c c 1 ) c 2 c c c c c 2,0
+950,C=CC1CCC=CC1,C = C C 1 C C C = C C 1,0
+951,CC(C)C1CCC(C)CC1O,C C ( C ) C 1 C C C ( C ) C C 1 O,0
+952,Cc1cc(C)cc(O[P](=O)(Oc2cc(C)cc(C)c2)Oc3cc(C)cc(C)c3)c1,C c 1 c c ( C ) c c ( O [ P ] ( = O ) ( O c 2 c c ( C ) c c ( C ) c 2 ) O c 3 c c ( C ) c c ( C ) c 3 ) c 1,0
+953,CC(c1ccccc1)c2cc(C)ccc2C,C C ( c 1 c c c c c 1 ) c 2 c c ( C ) c c c 2 C,0
+954,CC(C)(c1ccccc1)c2ccc(O)cc2,C C ( C ) ( c 1 c c c c c 1 ) c 2 c c c ( O ) c c 2,0
+955,Clc1cccc2ccccc12,Cl c 1 c c c c 2 c c c c c 1 2,0
+956,COc1cccc2ccccc12,C O c 1 c c c c 2 c c c c c 1 2,0
+957,CC(C)(C)c1ccc2C(=O)c3ccccc3C(=O)c2c1,C C ( C ) ( C ) c 1 c c c 2 C ( = O ) c 3 c c c c c 3 C ( = O ) c 2 c 1,0
+958,Clc1ccc2C(=O)c3ccccc3C(=O)c2c1,Cl c 1 c c c 2 C ( = O ) c 3 c c c c c 3 C ( = O ) c 2 c 1,0
+959,Sc1ccc2ccccc2c1,S c 1 c c c 2 c c c c c 2 c 1,0
+960,[nH]1c2ccccc2c3ccccc13,[ n H ] 1 c 2 c c c c c 2 c 3 c c c c c 1 3,0
+961,ClCCOC(c1ccccc1)c2ccccc2,Cl C C O C ( c 1 c c c c c 1 ) c 2 c c c c c 2,0
+962,Oc1cc(Cl)ccc1Oc2ccc(Cl)cc2Cl,O c 1 c c ( Cl ) c c c 1 O c 2 c c c ( Cl ) c c 2 Cl,0
+963,CC(CCl)OC(C)CCl,C C ( C Cl ) O C ( C ) C Cl,0
+964,Nc1ccc(cc1)[N](=O)=O,N c 1 c c c ( c c 1 ) [ N ] ( = O ) = O,0
+965,CCN(CC)C(=O)c1cccc(C)c1,C C N ( C C ) C ( = O ) c 1 c c c c ( C ) c 1,0
+966,O=C1c2ccccc2c3cccc4cccc1c34,O = C 1 c 2 c c c c c 2 c 3 c c c c 4 c c c c 1 c 3 4,0
+967,O=C1CCCCCCCCCCCN1,O = C 1 C C C C C C C C C C C N 1,0
+968,s1cnc2ccccc12,s 1 c n c 2 c c c c c 1 2,0
+969,CC(Cl)CCl,C C ( Cl ) C Cl,0
+970,OCCC(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)F,O C C C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) F,0
+971,CN(C)[S](=O)(=O)N(SC(F)(Cl)Cl)c1ccccc1,C N ( C ) [ S ] ( = O ) ( = O ) N ( S C ( F ) ( Cl ) Cl ) c 1 c c c c c 1,0
+972,c1cc2cccc3C=Cc(c1)c23,c 1 c c 2 c c c c 3 C = C c ( c 1 ) c 2 3,0
+973,ClC(c1ccccc1)(c2ccccc2)c3ccccc3,Cl C ( c 1 c c c c c 1 ) ( c 2 c c c c c 2 ) c 3 c c c c c 3,0
+974,OCCN(CCO)CCO,O C C N ( C C O ) C C O,0
+975,CCOC(N)=O,C C O C ( N ) = O,0
+976,CNC(=O)CS[P](=S)(OC)OC,C N C ( = O ) C S [ P ] ( = S ) ( O C ) O C,0
+977,CCCCCCCCc1ccccc1Nc2ccccc2CCCCCCCC,C C C C C C C C c 1 c c c c c 1 N c 2 c c c c c 2 C C C C C C C C,0
+978,CCCCCCCCc1ccc(Nc2ccc(CCCCCCCC)cc2)cc1,C C C C C C C C c 1 c c c ( N c 2 c c c ( C C C C C C C C ) c c 2 ) c c 1,0
+979,Cc1ccccc1[S](N)(=O)=O,C c 1 c c c c c 1 [ S ] ( N ) ( = O ) = O,0
+980,CC(C)c1ccc(O[P](=O)(Oc2ccc(cc2)C(C)C)Oc3ccc(cc3)C(C)C)cc1,C C ( C ) c 1 c c c ( O [ P ] ( = O ) ( O c 2 c c c ( c c 2 ) C ( C ) C ) O c 3 c c c ( c c 3 ) C ( C ) C ) c c 1,0
+981,N[S](=O)(=O)c1ccccc1,N [ S ] ( = O ) ( = O ) c 1 c c c c c 1,0
+982,CC1=CC2CC1C3C2C(=O)OC3=O,C C 1 = C C 2 C C 1 C 3 C 2 C ( = O ) O C 3 = O,0
+983,CC1=NN(C(=O)C1)c2cc(Cl)c(cc2Cl)[S](O)(=O)=O,C C 1 = N N ( C ( = O ) C 1 ) c 2 c c ( Cl ) c ( c c 2 Cl ) [ S ] ( O ) ( = O ) = O,0
+984,S=C1NCCN1,S = C 1 N C C N 1,0
+985,OC(=O)c1ccc(nc1)C(O)=O,O C ( = O ) c 1 c c c ( n c 1 ) C ( O ) = O,0
+986,C1COCCN1,C 1 C O C C N 1,0
+987,OCCN1C(=O)N(CCO)C(=O)N(CCO)C1=O,O C C N 1 C ( = O ) N ( C C O ) C ( = O ) N ( C C O ) C 1 = O,0
+988,[O-][N+](=O)c1cc(ccc1Nc2ccccc2)[S](=O)(=O)Nc3ccccc3,[ O- ] [ N+ ] ( = O ) c 1 c c ( c c c 1 N c 2 c c c c c 2 ) [ S ] ( = O ) ( = O ) N c 3 c c c c c 3,0
+989,CC(C)C1=NC(=O)C=C(C)N1,C C ( C ) C 1 = N C ( = O ) C = C ( C ) N 1,0
+990,ClCC=CCl,Cl C C = C Cl,0
+991,COCCCN,C O C C C N,0
+992,CN(C)C(=O)C=C,C N ( C ) C ( = O ) C = C,0
+993,N#CCCNCCC#N,N # C C C N C C C # N,0
+994,CN(C)C(=S)SSC(=S)N(C)C,C N ( C ) C ( = S ) S S C ( = S ) N ( C ) C,0
+995,ClCC(CCl)O[P](=O)(OC(CCl)CCl)OC(CCl)CCl,Cl C C ( C Cl ) O [ P ] ( = O ) ( O C ( C Cl ) C Cl ) O C ( C Cl ) C Cl,0
+996,CC1(CCl)CO1,C C 1 ( C Cl ) C O 1,0
+997,CC(O)CN(CCN(CC(C)O)CC(C)O)CC(C)O,C C ( O ) C N ( C C N ( C C ( C ) O ) C C ( C ) O ) C C ( C ) O,0
+998,CNc1ccccc1,C N c 1 c c c c c 1,0
+999,CN(C(C)=O)c1ccccc1,C N ( C ( C ) = O ) c 1 c c c c c 1,0
+1000,N(c1ccccc1)c2ccc(Nc3ccccc3)cc2,N ( c 1 c c c c c 1 ) c 2 c c c ( N c 3 c c c c c 3 ) c c 2,0
+1001,CN(C)Cc1ccccc1,C N ( C ) C c 1 c c c c c 1,0
+1002,Cc1c(c(C)c(c(c1[N+]([O-])=O)C(C)(C)C)[N+]([O-])=O)[N+]([O-])=O,C c 1 c ( c ( C ) c ( c ( c 1 [ N+ ] ( [ O- ] ) = O ) C ( C ) ( C ) C ) [ N+ ] ( [ O- ] ) = O ) [ N+ ] ( [ O- ] ) = O,0
+1003,Cc1ccc(c(O)c1)C(C)(C)C,C c 1 c c c ( c ( O ) c 1 ) C ( C ) ( C ) C,0
+1004,[O-][N+](=O)c1ccc(Oc2ccc(Cl)cc2Cl)cc1,[ O- ] [ N+ ] ( = O ) c 1 c c c ( O c 2 c c c ( Cl ) c c 2 Cl ) c c 1,0
+1005,COc1cccc(c1)[N+]([O-])=O,C O c 1 c c c c ( c 1 ) [ N+ ] ( [ O- ] ) = O,0
+1006,COc1ccc(N)c(c1)[N+]([O-])=O,C O c 1 c c c ( N ) c ( c 1 ) [ N+ ] ( [ O- ] ) = O,0
+1007,Oc1ccc(Cl)cc1,O c 1 c c c ( Cl ) c c 1,0
+1008,CC(C)(C)OOC(C)(C)c1ccc(cc1)C(C)(C)OOC(C)(C)C,C C ( C ) ( C ) O O C ( C ) ( C ) c 1 c c c ( c c 1 ) C ( C ) ( C ) O O C ( C ) ( C ) C,0
+1009,CC1(C)C2CCC(C)(OO)C1C2,C C 1 ( C ) C 2 C C C ( C ) ( O O ) C 1 C 2,0
+1010,CC1CC(=O)CC(C)(C)C1,C C 1 C C ( = O ) C C ( C ) ( C ) C 1,0
+1011,c1ccc(cc1)c2ccc(cc2)c3ccccc3,c 1 c c c ( c c 1 ) c 2 c c c ( c c 2 ) c 3 c c c c c 3,0
+1012,Cc1cccc2ccccc12,C c 1 c c c c 2 c c c c c 1 2,0
+1013,Oc1ccc(Cc2ccc(O)cc2)cc1,O c 1 c c c ( C c 2 c c c ( O ) c c 2 ) c c 1,0
+1014,CCN(CC)c1ccc(c(O)c1)C(=O)c2ccccc2C(O)=O,C C N ( C C ) c 1 c c c ( c ( O ) c 1 ) C ( = O ) c 2 c c c c c 2 C ( O ) = O,0
+1015,CC(C)COc1ccc2ccccc2c1,C C ( C ) C O c 1 c c c 2 c c c c c 2 c 1,0
+1016,Nc1ccc2c(cccc2[S](O)(=O)=O)c1[S](O)(=O)=O,N c 1 c c c 2 c ( c c c c 2 [ S ] ( O ) ( = O ) = O ) c 1 [ S ] ( O ) ( = O ) = O,0
+1017,C1CCC2CCCCC2C1,C 1 C C C 2 C C C C C 2 C 1,0
+1018,OCC1CC23CCC1(CC2)CC3CO,O C C 1 C C 2 3 C C C 1 ( C C 2 ) C C 3 C O,0
+1019,c1ccc2cc3ccccc3cc2c1,c 1 c c c 2 c c 3 c c c c c 3 c c 2 c 1,0
+1020,Nc1ccc2C(=O)c3ccccc3C(=O)c2c1,N c 1 c c c 2 C ( = O ) c 3 c c c c c 3 C ( = O ) c 2 c 1,0
+1021,CC(C)Nc1ccc(NC(C)C)c2C(=O)c3ccccc3C(=O)c12,C C ( C ) N c 1 c c c ( N C ( C ) C ) c 2 C ( = O ) c 3 c c c c c 3 C ( = O ) c 1 2,0
+1022,[nH]1nc2ccccc2n1,[ n H ] 1 n c 2 c c c c c 2 n 1,0
+1023,O=C1NC(=O)C(N1)(c2ccccc2)c3ccccc3,O = C 1 N C ( = O ) C ( N 1 ) ( c 2 c c c c c 2 ) c 3 c c c c c 3,0
+1024,CC(N)=S,C C ( N ) = S,0
+1025,BrC(Br)C(Br)Br,Br C ( Br ) C ( Br ) Br,0
+1026,FC(F)(F)C(Cl)Cl,F C ( F ) ( F ) C ( Cl ) Cl,0
+1027,ClCC(Cl)C=C,Cl C C ( Cl ) C = C,0
+1028,FC(F)(F)C(F)(F)C(F)(F)C(F)(F)N(C(F)(F)C(F)(F)C(F)(F)C(F)(F)F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)F,F C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) N ( C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) F,0
+1029,ClCCOCCCl,Cl C C O C C Cl,0
+1030,CC(C)OCCO,C C ( C ) O C C O,0
+1031,CC(CC=O)CC(C)(C)C,C C ( C C = O ) C C ( C ) ( C ) C,0
+1032,ClC(Cl)(Cl)C=O,Cl C ( Cl ) ( Cl ) C = O,0
+1033,CCCCCCCCCCCCCCCCCCCCCC(N)=O,C C C C C C C C C C C C C C C C C C C C C C ( N ) = O,0
+1034,CO[PH](=O)OC,C O [ P H ] ( = O ) O C,0
+1035,CCCCCO[P](=O)(OCCCCC)OCCCCC,C C C C C O [ P ] ( = O ) ( O C C C C C ) O C C C C C,0
+1036,OC(=O)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)F,O C ( = O ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) C ( F ) ( F ) F,0
+1037,Cc1ccc(C)c(C)c1,C c 1 c c c ( C ) c ( C ) c 1,0
+1038,Cc1c(Br)c(Br)c(Br)c(Br)c1Br,C c 1 c ( Br ) c ( Br ) c ( Br ) c ( Br ) c 1 Br,0
+1039,Nc1ccc(N)cc1,N c 1 c c c ( N ) c c 1,0
+1040,CC(=O)Nc1ccc(N)cc1,C C ( = O ) N c 1 c c c ( N ) c c 1,0
+1041,Cc1cccc(c1O)C(C)(C)C,C c 1 c c c c ( c 1 O ) C ( C ) ( C ) C,0
+1042,Cc1cc(C)c(O)c(C)c1,C c 1 c c ( C ) c ( O ) c ( C ) c 1,0
+1043,Cc1cc(C)c(O)c(c1)C(C)(C)C,C c 1 c c ( C ) c ( O ) c ( c 1 ) C ( C ) ( C ) C,0
+1044,Cc1ccc(Cl)c(O)c1,C c 1 c c c ( Cl ) c ( O ) c 1,0
+1045,CSc1ccc(O)cc1,C S c 1 c c c ( O ) c c 1,0
+1046,CC(Cc1ccc(cc1)C(C)(C)C)C=O,C C ( C c 1 c c c ( c c 1 ) C ( C ) ( C ) C ) C = O,0
+1047,Cc1cc(cc(c1O)[N+]([O-])=O)[N+]([O-])=O,C c 1 c c ( c c ( c 1 O ) [ N+ ] ( [ O- ] ) = O ) [ N+ ] ( [ O- ] ) = O,0
+1048,CCO[P](=S)(OCC)O\N=C(/C#N)c1ccccc1,C C O [ P ] ( = S ) ( O C C ) O \ N = C ( / C # N ) c 1 c c c c c 1,0
+1049,COC(=O)c1ccc2cc(ccc2c1)C(=O)OC,C O C ( = O ) c 1 c c c 2 c c ( c c c 2 c 1 ) C ( = O ) O C,0
+1050,CC1(C)CC(=O)CC(C)(C)N1,C C 1 ( C ) C C ( = O ) C C ( C ) ( C ) N 1,0
+1051,C=CC(=O)OCCN1C(=O)N(CCOC(=O)C=C)C(=O)N(CCOC(=O)C=C)C1=O,C = C C ( = O ) O C C N 1 C ( = O ) N ( C C O C ( = O ) C = C ) C ( = O ) N ( C C O C ( = O ) C = C ) C 1 = O,0
+1052,O=C(OCCN(CCC#N)c1ccc(cc1)N=Nc2ccc(cc2)[N](=O)=O)c3ccccc3,O = C ( O C C N ( C C C # N ) c 1 c c c ( c c 1 ) N = N c 2 c c c ( c c 2 ) [ N ] ( = O ) = O ) c 3 c c c c c 3,0
+1053,Clc1cccc2C3=NC4=NC(=Nc5n6[Cu]N3C(=NC7=NC(=Nc6c8ccccc58)c9ccccc79)c12)c%10ccccc4%10,Cl c 1 c c c c 2 C 3 = N C 4 = N C ( = N c 5 n 6 [ C u ] N 3 C ( = N C 7 = N C ( = N c 6 c 8 c c c c c 5 8 ) c 9 c c c c c 7 9 ) c 1 2 ) c % 1 0 c c c c c 4 % 1 0,0
+1054,Clc1ccccc1c2ccccc2Cl,Cl c 1 c c c c c 1 c 2 c c c c c 2 Cl,0
