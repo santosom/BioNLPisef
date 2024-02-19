@@ -52,14 +52,15 @@ def prepareNewData():
     dropped_dataset = dropped_dataset.drop('Class', axis=1)
     dropped_dataset.insert(1, 'Class', numberedLabels, True)
 
-
     # NOTE: might have to return to this and create an empty/random array for chembl_id if training goes poorly the first time, because that's something the original dataset has that we don't
     print('processed smiles len: ', len(pro_sms))
     dropped_dataset.insert(1, 'processed_smiles', pro_sms, True)
 
-    # split into training and validation dataset (*not working with the testing dataset yet*)
+    # don't split into training/validation just make a big csv
+    dropped_dataset.drop('Status', axis=1)
+    dropped_dataset.to_csv('Data/all_RB.csv')
 
-    training_index = dropped_dataset.index[dropped_dataset['Status'] == 'Train'].tolist()
+"""    training_index = dropped_dataset.index[dropped_dataset['Status'] == 'Train'].tolist()
     validation_index = dropped_dataset.index[dropped_dataset['Status'] == 'Test'].tolist()
 
     validation_dataset = dropped_dataset.drop(training_index)
@@ -73,7 +74,7 @@ def prepareNewData():
     print(training_dataset.head())
     print(training_dataset['Class'].value_counts(normalize=True))
     print(validation_dataset.head())
-    print(validation_dataset['Class'].value_counts(normalize=True))
+    print(validation_dataset['Class'].value_counts(normalize=True))"""
 
 class customSmilesDataset(Dataset):
     def __init__(self, rootFile, isTrain):
