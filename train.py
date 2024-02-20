@@ -88,14 +88,18 @@ def customBiodegrade(model, device, train_loader, optimizer, epoch):
     loss_fn = torch.nn.BCELoss()
     n_epochs = 40
     #define training loop
-    for epic in range(epoch):
+    for e in range(epoch):
         for idx, (inputs, labels) in enumerate(train_loader):
             customModel.train()
-            print(f'In the loop, input type is {type(inputs)} and label type is {type(labels)}')
             optimizer.zero_grad()
 
-            outputs = model(inputs)
-            loss = loss_fn(outputs, labels)
+            outputs = customModel(inputs)
+            outputs = outputs.to(torch.float32)
+            labels = labels.to(torch.float32)
+
+            print(f"OUTPUT TYPE IS {type(outputs)} and LABEL TYPE IS {type(labels)}")
+
+            loss = loss_fn(outputs.squeeze(), labels)
             loss.backward()
             optimizer.step()
 
@@ -121,15 +125,16 @@ def _train():
     print(f"Process is done! The overall mean score is {overallAverage}")
 
 def _train2():
+    print('TRAIN 2 CALLED')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     #need to go back and replace with Data/all_RB.csv
-    dataset = pd.read_csv('Data/RB_val.csv')
+    dataset = pd.read_csv('Data/baby_dataset.csv')
     smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
     smilesID, _ = get_array(smiles_split)
     smiles_train = trfm.encode(torch.t(smilesID))
     labels_train = dataset['Class'].values
 
-    kfold = StratifiedKFold(n_splits=10, shuffle=True)
+    kfold = StratifiedKFold(n_splits=3, shuffle=True)
 
     for train_index, test_index in kfold.split(smiles_train, labels_train):
         trainingData = biodegradeDataset(smiles_train[train_index], labels_train[train_index])
