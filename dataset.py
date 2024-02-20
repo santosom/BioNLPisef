@@ -63,6 +63,6 @@ class biodegradeDataset(Dataset):
     def __getitem__(self, idx):
         label = self.labels[idx]
         text = self.smiles[idx]
-        sample = {"Text": text, "Class": label}
-        return sample
+        # sample = {"Text": text, "Class": label}
+        return text,  label
 

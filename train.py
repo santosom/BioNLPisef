@@ -132,20 +132,22 @@ def _train2():
     kfold = StratifiedKFold(n_splits=10, shuffle=True)
 
     for train_index, test_index in kfold.split(smiles_train, labels_train):
-        dataaaaaaa = biodegradeDataset(smiles_train[train_index], labels_train[train_index])
+        trainingData = biodegradeDataset(smiles_train[train_index], labels_train[train_index])
+        testingData = biodegradeDataset(smiles_train[test_index], labels_train[test_index])
+
 
         # Define the data loaders for the current fold
         train_loader = DataLoader(
-            dataset=dataaaaaaa,
-            batch_size=batch_size,
+            dataset=trainingData,
+            batch_size=batch_size
         )
         test_loader = DataLoader(
-            dataset=dataaaaaaa,
-            batch_size=batch_size,
+            dataset=testingData,
+            batch_size=batch_size
         )
 
         # Initialize the model and optimizer
-        model = classify(len_vocab, 100).to(device)
+        model = classify(64, 1024).to(device)
         optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
         print('intialized model and optimizer')
 
