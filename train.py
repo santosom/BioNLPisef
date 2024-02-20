@@ -81,16 +81,16 @@ def testBiodegrade(smilesTrain, labelsTrain, smilesTest, labelsTest, n_repeats):
     ret['auc std'] = np.std(auc)
     return ret
 
-def customBiodegrade(model, device, train_loader, optimizer, epoch):
+def customBiodegrade(model, device, train_loader, val_loader, optimizer, epoch): #this is an entire training loop, NOT just one epoch
+
     customModel = model
-    learning_rate = .01
-    optimizer = optim.Adam(trfm.parameters(), lr=learning_rate)
     loss_fn = torch.nn.BCELoss()
     n_epochs = 40
     #define training loop
     for e in range(epoch):
         for idx, (inputs, labels) in enumerate(train_loader):
             customModel.train()
+            #clear gradient
             optimizer.zero_grad()
 
             outputs = customModel(inputs)
@@ -102,6 +102,11 @@ def customBiodegrade(model, device, train_loader, optimizer, epoch):
             loss = loss_fn(outputs.squeeze(), labels)
             loss.backward()
             optimizer.step()
+
+        customModel.eval()
+        #implement method of evaluating the loss and validation every epoch here
+
+    #implement method of evaluating the lsos and validation every train cycle here
 
 #trfm, learning_rate, opt, epochs, batch_size
 def _train():
@@ -125,7 +130,6 @@ def _train():
     print(f"Process is done! The overall mean score is {overallAverage}")
 
 def _train2():
-    print('TRAIN 2 CALLED')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     #need to go back and replace with Data/all_RB.csv
     dataset = pd.read_csv('Data/baby_dataset.csv')
@@ -133,13 +137,13 @@ def _train2():
     smilesID, _ = get_array(smiles_split)
     smiles_train = trfm.encode(torch.t(smilesID))
     labels_train = dataset['Class'].values
+    epoch = 10
 
     kfold = StratifiedKFold(n_splits=3, shuffle=True)
 
     for train_index, test_index in kfold.split(smiles_train, labels_train):
         trainingData = biodegradeDataset(smiles_train[train_index], labels_train[train_index])
         testingData = biodegradeDataset(smiles_train[test_index], labels_train[test_index])
-
 
         # Define the data loaders for the current fold
         train_loader = DataLoader(
@@ -152,26 +156,12 @@ def _train2():
         )
 
         # Initialize the model and optimizer
+        learning_rate = .01
         model = classify(1024, 64).to(device)
-        optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
+        optimizer = optim.Adam(trfm.parameters(), lr=learning_rate)
         print('intialized model and optimizer')
 
         # Train the model on the current fold
-        for epoch in range(1, 11):
-            customBiodegrade(model, device, train_loader, optimizer, epoch)
-
-        model.eval()
-        test_loss = 0
-        correct = 0
-        with torch.no_grad():
-            for data, target in test_loader:
-                data, target = data.to(device), target.to(device)
-                output = model(data)
-                test_loss += nn.functional.nll_loss(output, target, reduction="sum").item()
-                pred = output.argmax(dim=1, keepdim=True)
-                correct += pred.eq(target.view_as(pred)).sum().item()
-
-        test_loss /= len(test_loader.dataset)
-        accuracy = 100.0 * correct / len(test_loader.dataset)
-
-_train2()
+        customBiodegrade(model, device, train_loader, optimizer, epoch)
+_train() #this one is fully operational
+_train2() #this one isn't (still need to create method of evaluating accuracy)
