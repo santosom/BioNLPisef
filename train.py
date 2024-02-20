@@ -85,7 +85,7 @@ def customBiodegrade(model, device, train_loader, optimizer, epoch):
     customModel = model
     learning_rate = .01
     optimizer = optim.Adam(trfm.parameters(), lr=learning_rate)
-    loss_fn = torch.nn.CrossEntropyLoss()
+    loss_fn = torch.nn.BCELoss()
     n_epochs = 40
     #define training loop
     for epic in range(epoch):
@@ -147,7 +147,7 @@ def _train2():
         )
 
         # Initialize the model and optimizer
-        model = classify(64, 1024).to(device)
+        model = classify(1024, 64).to(device)
         optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
         print('intialized model and optimizer')
 
