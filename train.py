@@ -21,14 +21,17 @@ import argparse
 from build_vocab import WordVocab
 from utils import split
 from pretrain_trfm import TrfmSeq2seq
+from classifier import classify
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split, StratifiedKFold, StratifiedShuffleSplit, KFold
+from dataset import biodegradeDataset
 
 pad_index = 0
 unk_index = 1
 eos_index = 2
 sos_index = 3
 mask_index = 4
+batch_size = 64
 
 vocab = WordVocab.load_vocab('data/vocab.pkl')
 len_vocab = 45
@@ -39,8 +42,6 @@ trfm = TrfmSeq2seq(len_vocab, 256, len_vocab , 4)
 trfm.load_state_dict(torch.load('Data/smilesPretrained.pkl', map_location=torch.device('cpu')), strict=False)
 
 #decrease this learning rate if the model performs poorly
-learning_rate = .01
-optimizer = optim.Adam(trfm.parameters(), lr = learning_rate)
 df_train = pd.read_csv('Data/RB_train.csv')
 df_val = pd.read_csv('Data/RB_val.csv')
 
@@ -67,7 +68,7 @@ def get_array(smiles):
         x_seg.append(b)
     return torch.tensor(x_id), torch.tensor(x_seg)
 
-def testBiodegrade(smilesTrain, labelsTrain, smilesTest, labelsTest, n_repeats): #go through and comment this
+def testBiodegrade(smilesTrain, labelsTrain, smilesTest, labelsTest, n_repeats): #replace MLP classifier with custom classifier. I hate this guy
     print('biodegrade method has been called')
     auc = np.empty(n_repeats)
     for i in range(n_repeats):
@@ -80,6 +81,24 @@ def testBiodegrade(smilesTrain, labelsTrain, smilesTest, labelsTest, n_repeats):
     ret['auc std'] = np.std(auc)
     return ret
 
+def customBiodegrade(model, device, train_loader, optimizer, epoch):
+    customModel = model
+    learning_rate = .01
+    optimizer = optim.Adam(trfm.parameters(), lr=learning_rate)
+    loss_fn = torch.nn.CrossEntropyLoss()
+    n_epochs = 40
+    #define training loop
+    for epic in range(epoch):
+        for idx, (inputs, labels) in enumerate(train_loader):
+            customModel.train()
+            print(f'In the loop, input type is {type(inputs)} and label type is {type(labels)}')
+            optimizer.zero_grad()
+
+            outputs = model(inputs)
+            loss = loss_fn(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
 #trfm, learning_rate, opt, epochs, batch_size
 def _train():
     dataset = pd.read_csv('Data/all_RB.csv')
@@ -89,40 +108,63 @@ def _train():
     print(f'{smiles_train.shape}, the datatype is {type(smiles_train)}')
     labels_train = dataset['Class'].values
 
-    kfold = StratifiedKFold(n_splits=3, shuffle=True)
-    #one of the issues with k fold here is that we don't really have a singular dataset at the end of the encoding, since we need to use the encoded smiles taken above. at the same time, we need to base the train/test split off of the distribution of classes
-    #if we were to implement it, here is where we would want to add a for-loop iterating through all of the sets and using them with testBiodegradable()
+    #you need to shuffle before you split because otherwise you'll get training data with only biodegradable chemicals and validation data with only non biodegradable data, and stuff like that
+    kfold = StratifiedKFold(n_splits=10, shuffle=True)
+    overallAverageList = []
     for train_index, test_index in kfold.split(smiles_train, labels_train):
         x_train, x_val, y_train, y_val = smiles_train[train_index], smiles_train[test_index], labels_train[train_index], labels_train[test_index]
-        print(testBiodegrade(x_train, y_train, x_val, y_val, 50))
+        currentAverageDict = testBiodegrade(x_train, y_train, x_val, y_val, 20)
+        print(currentAverageDict)
+        overallAverageList.append(currentAverageDict['auc mean'])
 
+    overallAverage = np.mean(overallAverageList)
+    print(f"Process is done! The overall mean score is {overallAverage}")
 
+def _train2():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    #need to go back and replace with Data/all_RB.csv
+    dataset = pd.read_csv('Data/RB_val.csv')
+    smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
+    smilesID, _ = get_array(smiles_split)
+    smiles_train = trfm.encode(torch.t(smilesID))
+    labels_train = dataset['Class'].values
 
+    kfold = StratifiedKFold(n_splits=10, shuffle=True)
 
+    for train_index, test_index in kfold.split(smiles_train, labels_train):
+        dataaaaaaa = biodegradeDataset(smiles_train[train_index], labels_train[train_index])
 
-"""def iterateTest():
+        # Define the data loaders for the current fold
+        train_loader = DataLoader(
+            dataset=dataaaaaaa,
+            batch_size=batch_size,
+        )
+        test_loader = DataLoader(
+            dataset=dataaaaaaa,
+            batch_size=batch_size,
+        )
 
-    kfold = StratifiedKFold(n_splits=5, shuffle=True)
-    sets = kfold.split(dataset,dataset['Class'])
+        # Initialize the model and optimizer
+        model = classify(len_vocab, 100).to(device)
+        optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
+        print('intialized model and optimizer')
 
-    overallscore = []
-    for train_index, test_index in sets:
+        # Train the model on the current fold
+        for epoch in range(1, 11):
+            customBiodegrade(model, device, train_loader, optimizer, epoch)
 
-        print('hiiiiiiiiiiiiiiiiiiiii')
-        X_train, X_test, y_train, y_test = X[train_index], X[test_index], y[train_index], y[test_index]
+        model.eval()
+        test_loss = 0
+        correct = 0
+        with torch.no_grad():
+            for data, target in test_loader:
+                data, target = data.to(device), target.to(device)
+                output = model(data)
+                test_loss += nn.functional.nll_loss(output, target, reduction="sum").item()
+                pred = output.argmax(dim=1, keepdim=True)
+                correct += pred.eq(target.view_as(pred)).sum().item()
 
-        currentAve = _train(X_train, X_val)
-        overallscore.append(currentAve)
-        print(f'current ave is {currentAve}')
+        test_loss /= len(test_loader.dataset)
+        accuracy = 100.0 * correct / len(test_loader.dataset)
 
-    overallAverage = np.mean(overallscore)
-    print("OVERALL AVERAGE: ", overallAverage)"""
-
-_train()
-
-
-
-
-
-
-
+_train2()
