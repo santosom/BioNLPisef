@@ -81,13 +81,16 @@ def testBiodegrade(smilesTrain, labelsTrain, smilesTest, labelsTest, n_repeats):
     ret['auc std'] = np.std(auc)
     return ret
 
-def customBiodegrade(model, device, train_loader, val_loader, optimizer, epoch): #this is an entire training loop, NOT just one epoch
+def customBiodegrade(model, train_loader, val_loader, optimizer, epoch): #this is an entire training loop, NOT just one epoch
 
     customModel = model
     loss_fn = torch.nn.BCELoss()
     n_epochs = 40
     #define training loop
+    accuracies = []
     for e in range(epoch):
+        epoch_loss = 0
+        running_loss = 0
         for idx, (inputs, labels) in enumerate(train_loader):
             customModel.train()
             #clear gradient
@@ -97,16 +100,50 @@ def customBiodegrade(model, device, train_loader, val_loader, optimizer, epoch):
             outputs = outputs.to(torch.float32)
             labels = labels.to(torch.float32)
 
-            print(f"OUTPUT TYPE IS {type(outputs)} and LABEL TYPE IS {type(labels)}")
-
             loss = loss_fn(outputs.squeeze(), labels)
             loss.backward()
             optimizer.step()
 
-        customModel.eval()
+            epoch_loss += outputs.shape[0] * loss.item()
+            if idx % 2 == 0:
+                last_loss = running_loss / 1000  # loss per batch
+                print('  batch {} loss: {}'.format(idx + 1, last_loss))
+                tb_x = e * len(train_loader) + idx + 1
+                running_loss = 0.
         #implement method of evaluating the loss and validation every epoch here
+        customModel.eval()
+        val_loss = 0.0
+        #should be the same process as above, just with the validation loader
+        total_correct = 0
+        total_samples = 0
+        print(f"there are {len(val_loader)} in val loader")
+        for i, (inputs, labels) in enumerate(val_loader):
+            #check the size of val_loader here
 
-    #implement method of evaluating the lsos and validation every train cycle here
+            customModel.eval()
+
+            outputs = customModel(inputs)
+            outputs = outputs.to(torch.float32)
+            labels = labels.to(torch.float32)
+            _, predicted = torch.max(outputs, 1)
+
+            loss = loss_fn(outputs.squeeze(-1), labels)
+            val_loss += loss.item()
+            total_correct += (predicted == labels).sum().item()
+            total_samples += labels.size(0)
+        accuracy = 100 * total_correct / total_samples
+        print(f'Epoch {e + 1}: Accuracy = {accuracy:.2f}%')
+        accuracies.append(accuracy)
+
+    fig, ax = plt.subplots()
+    ax.plot(range(epoch), accuracies)
+    ax.set_xlabel('Epoch')
+    ax.set_ylabel('Accuracy')
+    ax.set_title('Accuracy per Epoch')
+    plt.show()
+    print("MODEL ACCURACY ON FOLD:", np.mean(accuracies))
+    print(" ")
+    #implement method of evaluating the loss and validation every train cycle here
 
 #trfm, learning_rate, opt, epochs, batch_size
 def _train():
@@ -132,14 +169,14 @@ def _train():
 def _train2():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     #need to go back and replace with Data/all_RB.csv
-    dataset = pd.read_csv('Data/baby_dataset.csv')
+    dataset = pd.read_csv('Data/all_RB.csv')
     smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
     smilesID, _ = get_array(smiles_split)
     smiles_train = trfm.encode(torch.t(smilesID))
     labels_train = dataset['Class'].values
     epoch = 10
 
-    kfold = StratifiedKFold(n_splits=3, shuffle=True)
+    kfold = StratifiedKFold(n_splits=4, shuffle=True)
 
     for train_index, test_index in kfold.split(smiles_train, labels_train):
         trainingData = biodegradeDataset(smiles_train[train_index], labels_train[train_index])
@@ -162,6 +199,6 @@ def _train2():
         print('intialized model and optimizer')
 
         # Train the model on the current fold
-        customBiodegrade(model, device, train_loader, optimizer, epoch)
-_train() #this one is fully operational
+        customBiodegrade(model, train_loader, test_loader, optimizer, epoch)
+#_train() #this one is fully operational
 _train2() #this one isn't (still need to create method of evaluating accuracy)
