@@ -1,0 +1,4 @@
+,Smiles,processed_smiles,Class,Status
+0,CCCCCCCCCCC,C C C C C C C C C C C,1,Train
+1,CCC1CO1,C C C 1 C O 1,1,Train
+2,CCOCCOCCOCCO,C C O C C O C C O C C O,1,Train

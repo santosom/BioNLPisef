@@ -54,3 +54,15 @@ class Seq2seqDataset(Dataset):
         X.extend(padding)
         return torch.tensor(X)
 
+class biodegradeDataset(Dataset):
+    def __init__(self, smiles, labels):
+        self.smiles = smiles
+        self.labels = labels
+    def __len__(self):
+        return len(self.labels)
+    def __getitem__(self, idx):
+        label = self.labels[idx]
+        text = self.smiles[idx]
+        # sample = {"Text": text, "Class": label}
+        return text,  label
+

@@ -59,6 +59,8 @@ def prepareNewData():
     # don't split into training/validation just make a big csv
     dropped_dataset.drop('Status', axis=1)
     dropped_dataset.to_csv('Data/all_RB.csv')
+    baby_dataset = dropped_dataset.drop(dropped_dataset.index[3:])
+    baby_dataset.to_csv('Data/baby_dataset.csv')
 
 """    training_index = dropped_dataset.index[dropped_dataset['Status'] == 'Train'].tolist()
     validation_index = dropped_dataset.index[dropped_dataset['Status'] == 'Test'].tolist()
