@@ -1,7 +1,8 @@
-#Experimental Class for Smiles Enumeration, Iterator and SmilesIterator adapted from Keras 1.2.2
+# Experimental Class for Smiles Enumeration, Iterator and SmilesIterator adapted from Keras 1.2.2
 from rdkit import Chem
 import numpy as np
 import threading
+
 
 class Iterator(object):
     """Abstract base class for data iterators.
@@ -58,8 +59,6 @@ class Iterator(object):
         return self.next(*args, **kwargs)
 
 
-
-
 class SmilesIterator(Iterator):
     """Iterator yielding data from a SMILES array.
 
@@ -106,9 +105,11 @@ class SmilesIterator(Iterator):
             index_array, current_index, current_batch_size = next(self.index_generator)
         # The transformation of images is not under thread lock
         # so it can be done in parallel
-        batch_x = np.zeros(tuple([current_batch_size] + [ self.smiles_data_generator.pad, self.smiles_data_generator._charlen]), dtype=self.dtype)
+        batch_x = np.zeros(
+            tuple([current_batch_size] + [self.smiles_data_generator.pad, self.smiles_data_generator._charlen]),
+            dtype=self.dtype)
         for i, j in enumerate(index_array):
-            smiles = self.x[j:j+1]
+            smiles = self.x[j:j + 1]
             x = self.smiles_data_generator.transform(smiles)
             batch_x[i] = x
 
@@ -130,7 +131,9 @@ class SmilesEnumerator(object):
         enum: Enumerate the SMILES during transform
         canonical: use canonical SMILES during transform (overrides enum)
     """
-    def __init__(self, charset = '@C)(=cOn1S2/H[N]\\', pad=120, leftpad=True, isomericSmiles=True, enum=True, canonical=False):
+
+    def __init__(self, charset='@C)(=cOn1S2/H[N]\\', pad=120, leftpad=True, isomericSmiles=True, enum=True,
+                 canonical=False):
         self._charset = None
         self.charset = charset
         self.pad = pad
@@ -142,15 +145,15 @@ class SmilesEnumerator(object):
     @property
     def charset(self):
         return self._charset
-        
+
     @charset.setter
     def charset(self, charset):
         self._charset = charset
         self._charlen = len(charset)
-        self._char_to_int = dict((c,i) for i,c in enumerate(charset))
-        self._int_to_char = dict((i,c) for i,c in enumerate(charset))
-        
-    def fit(self, smiles, extra_chars=[], extra_pad = 5):
+        self._char_to_int = dict((c, i) for i, c in enumerate(charset))
+        self._int_to_char = dict((i, c) for i, c in enumerate(charset))
+
+    def fit(self, smiles, extra_chars=[], extra_pad=5):
         """Performs extraction of the charset and length of a SMILES datasets and sets self.pad and self.charset
         
         #Arguments
@@ -159,20 +162,20 @@ class SmilesEnumerator(object):
             extra_pad: Extra padding to add before or after the SMILES vectorization
         """
         charset = set("".join(list(smiles)))
-        #print(charset)
+        # print(charset)
         self.charset = "".join(charset.union(set(extra_chars)))
-        #print(self.charset)
+        # print(self.charset)
         self.pad = max([len(smile) for smile in smiles]) + extra_pad
-        
+
     def randomize_smiles(self, smiles):
         """Perform a randomization of a SMILES string
         must be RDKit sanitizable"""
         m = Chem.MolFromSmiles(smiles)
         if m is None:
-            return None # Invalid SMILES
+            return None  # Invalid SMILES
         ans = list(range(m.GetNumAtoms()))
         np.random.shuffle(ans)
-        nm = Chem.RenumberAtoms(m,ans)
+        nm = Chem.RenumberAtoms(m, ans)
         return Chem.MolToSmiles(nm, canonical=self.canonical, isomericSmiles=self.isomericSmiles)
 
     def transform(self, smiles):
@@ -180,44 +183,38 @@ class SmilesEnumerator(object):
         #Arguments
             smiles: Numpy array or Pandas series containing smiles as strings
         """
-        one_hot =  np.zeros((smiles.shape[0], self.pad, self._charlen),dtype=np.int8)
-        
+        one_hot = np.zeros((smiles.shape[0], self.pad, self._charlen), dtype=np.int8)
+
         if self.leftpad:
-            #print(smiles)
-            for i,ss in enumerate(smiles):
-                if self.enumerate: 
+            # print(smiles)
+            for i, ss in enumerate(smiles):
+                if self.enumerate:
                     ss = self.randomize_smiles(ss)
                 l = len(ss)
-                #print("???", ss)
+                # print("???", ss)
                 diff = self.pad - l
-                for j,c in enumerate(ss):
-                    one_hot[i,j+diff,self._char_to_int[c]] = 1
+                for j, c in enumerate(ss):
+                    one_hot[i, j + diff, self._char_to_int[c]] = 1
             return one_hot
         else:
-            for i,ss in enumerate(smiles):
-                if self.enumerate: 
+            for i, ss in enumerate(smiles):
+                if self.enumerate:
                     ss = self.randomize_smiles(ss)
-                for j,c in enumerate(ss):
-                    one_hot[i,j,self._char_to_int[c]] = 1
+                for j, c in enumerate(ss):
+                    one_hot[i, j, self._char_to_int[c]] = 1
             return one_hot
 
-      
     def reverse_transform(self, vect):
         """ Performs a conversion of a vectorized SMILES to a smiles strings
         charset must be the same as used for vectorization.
         #Arguments
             vect: Numpy array of vectorized SMILES.
-        """       
+        """
         smiles = []
         for v in vect:
-            #mask v 
-            v=v[v.sum(axis=1)==1]
-            #Find one hot encoded index with argmax, translate to char and join to string
+            # mask v
+            v = v[v.sum(axis=1) == 1]
+            # Find one hot encoded index with argmax, translate to char and join to string
             smile = "".join(self._int_to_char[i] for i in v.argmax(axis=1))
             smiles.append(smile)
         return np.array(smiles)
-
-
-
-
-        

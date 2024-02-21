@@ -1,10 +1,12 @@
 import argparse
 import pickle
 from collections import Counter
-#NOTE: I don't think this is actually a Vocab object, like what's commonly used in Pytorch NLP problems. This is a custom object made seperately. We make vocab.pkl with this
-#Look at the lack of any import torch here
-# Why is this the only file in the entire project with comments.
-#The comments were originally in Japanese, just run through Google Translate. I used the transformer to figure out the transformer!
+
+
+# NOTE: I don't think this is actually a Vocab object, like what's commonly used in Pytorch NLP problems. This is a
+# custom object made separately. We make vocab.pkl with this Look at the lack of any import torch here Why is this
+# the only file in the entire project with comments. The comments were originally in Japanese, just run through
+# Google Translate. I used the transformer to figure out the transformer!
 
 class TorchVocab(object):
     """
@@ -12,6 +14,7 @@ class TorchVocab(object):
     :property stoi: collections.defaultdict, string → Dictionary showing ID correspondence
     :property itos: collections.defaultdict, id → Dictionary of string mappings
     """
+
     def __init__(self, counter, max_size=None, min_freq=1, specials=['<pad>', '<oov>'],
                  vectors=None, unk_init=None, vectors_cache=None):
         """
@@ -35,7 +38,7 @@ class TorchVocab(object):
         # Sort first by frequency, then by letter order
         words_and_frequencies = sorted(counter.items(), key=lambda tup: tup[0])
         words_and_frequencies.sort(key=lambda tup: tup[1], reverse=True)
-        
+
         # Items whose appearance frequency is less than min_freq are not added to vocab.
         # there's a frequency threshold as defined by min_freq
         for word, freq in words_and_frequencies:
@@ -77,23 +80,25 @@ class TorchVocab(object):
                 self.stoi[w] = len(self.itos) - 1
 
 
-class Vocab(TorchVocab): #the WordVocab class below should inherit all of these functions? and this class should inherit functions from the above class
+class Vocab(
+    TorchVocab):  # the WordVocab class below should inherit all of these functions? and this class should inherit functions from the above class
     def __init__(self, counter, max_size=None, min_freq=1):
         self.pad_index = 0
         self.unk_index = 1
         self.eos_index = 2
         self.sos_index = 3
         self.mask_index = 4
-        super().__init__(counter, specials=["<pad>", "<unk>", "<eos>", "<sos>", "<mask>"], max_size=max_size, min_freq=min_freq)
+        super().__init__(counter, specials=["<pad>", "<unk>", "<eos>", "<sos>", "<mask>"], max_size=max_size,
+                         min_freq=min_freq)
 
     # override用
-    #i believe this creates a list of the passed values?
+    # i believe this creates a list of the passed values?
     # or this doesn't return anything. the comment above indicates it's a required def with no real purpose.
     def to_seq(self, sentece, seq_len, with_eos=False, with_sos=False) -> list:
         pass
 
     # override用
-    #this shouldn't return anything. the comment above indicates it's a required def with no real purpose.
+    # this shouldn't return anything. the comment above indicates it's a required def with no real purpose.
     def from_seq(self, seq, join=False, with_pad=False):
         pass
 
@@ -156,14 +161,14 @@ class WordVocab(Vocab):
     @staticmethod
     def load_vocab(vocab_path: str) -> 'WordVocab':
         with open(vocab_path, "rb") as f:
-            #i believe this returns a Vocab object
+            # i believe this returns a Vocab object
             return pickle.load(f)
 
 
 def main():
     parser = argparse.ArgumentParser(description='Build a vocabulary pickle')
-    parser.add_argument('--corpus_path', '-c', type=str, default='data/chembl24_corpus.txt', help='path to th ecorpus')
-    parser.add_argument('--out_path', '-o', type=str, default='data/vocab.pkl', help='output file')
+    parser.add_argument('--corpus_path', '-c', type=str, default='../Data/chembl24_corpus.txt', help='path to th ecorpus')
+    parser.add_argument('--out_path', '-o', type=str, default='../Data/vocab.pkl', help='output file')
     parser.add_argument('--min_freq', '-m', type=int, default=500, help='minimum frequency for vocabulary')
     parser.add_argument('--vocab_size', '-v', type=int, default=None, help='max vocabulary size')
     parser.add_argument('--encoding', '-e', type=str, default='utf-8', help='encoding of corpus')
@@ -175,5 +180,6 @@ def main():
     print("VOCAB SIZE:", len(vocab))
     vocab.save_vocab(args.out_path)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     main()

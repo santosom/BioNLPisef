@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-#pretty sure that these are just for nice looking graphs. fun though
+# pretty sure that these are just for nice looking graphs. fun though
 import matplotlib.pyplot as plt
 import rdkit
 from rdkit import Chem
@@ -18,7 +18,9 @@ from torch.utils.data import Dataset
 import os
 import math
 import argparse
-from build_vocab import WordVocab
+
+import Scripts.build_vocab
+from Scripts import build_vocab
 from utils import split
 from pretrain_trfm import TrfmSeq2seq
 from classifier import classify
@@ -33,42 +35,47 @@ sos_index = 3
 mask_index = 4
 batch_size = 64
 
-vocab = WordVocab.load_vocab('data/vocab.pkl')
+vocab = Scripts.build_vocab.WordVocab.load_vocab('data/vocab.pkl')
 len_vocab = 45
 print("vocab length: ", len(vocab))
 
 print("hello world")
-trfm = TrfmSeq2seq(len_vocab, 256, len_vocab , 4)
+trfm = TrfmSeq2seq(len_vocab, 256, len_vocab, 4)
 trfm.load_state_dict(torch.load('Data/smilesPretrained.pkl', map_location=torch.device('cpu')), strict=False)
 
-#decrease this learning rate if the model performs poorly
+# decrease this learning rate if the model performs poorly
 df_train = pd.read_csv('Data/RB_train.csv')
 df_val = pd.read_csv('Data/RB_val.csv')
 
-#this feels so random...?
-rates = 2**np.arange(7)/80
+# this feels so random...?
+rates = 2 ** np.arange(7) / 80
+
+
 def get_inputs(sm):
     seq_len = 220
     sm = sm.split()
-    if len(sm)>218:
+    if len(sm) > 218:
         print('SMILES is too long ({:d})'.format(len(sm)))
-        sm = sm[:109]+sm[-109:]
+        sm = sm[:109] + sm[-109:]
     ids = [vocab.stoi.get(token, unk_index) for token in sm]
     ids = [sos_index] + ids + [eos_index]
-    seg = [1]*len(ids)
-    padding = [pad_index]*(seq_len - len(ids))
+    seg = [1] * len(ids)
+    padding = [pad_index] * (seq_len - len(ids))
     ids.extend(padding), seg.extend(padding)
     return ids, seg
+
 
 def get_array(smiles):
     x_id, x_seg = [], []
     for sm in smiles:
-        a,b = get_inputs(sm)
+        a, b = get_inputs(sm)
         x_id.append(a)
         x_seg.append(b)
     return torch.tensor(x_id), torch.tensor(x_seg)
 
-def testBiodegrade(smilesTrain, labelsTrain, smilesTest, labelsTest, n_repeats): #replace MLP classifier with custom classifier. I hate this guy
+
+def testBiodegrade(smilesTrain, labelsTrain, smilesTest, labelsTest,
+                   n_repeats):  # replace MLP classifier with custom classifier. I hate this guy
     print('biodegrade method has been called')
     auc = np.empty(n_repeats)
     for i in range(n_repeats):
@@ -81,19 +88,21 @@ def testBiodegrade(smilesTrain, labelsTrain, smilesTest, labelsTest, n_repeats):
     ret['auc std'] = np.std(auc)
     return ret
 
-def customBiodegrade(model, train_loader, val_loader, optimizer, epoch): #this is an entire training loop, NOT just one epoch
+
+def customBiodegrade(model, train_loader, val_loader, optimizer,
+                     epoch):  # this is an entire training loop, NOT just one epoch
 
     customModel = model
     loss_fn = torch.nn.BCELoss()
     n_epochs = 40
-    #define training loop
+    # define training loop
     accuracies = []
     for e in range(epoch):
         epoch_loss = 0
         running_loss = 0
         for idx, (inputs, labels) in enumerate(train_loader):
             customModel.train()
-            #clear gradient
+            # clear gradient
             optimizer.zero_grad()
 
             outputs = customModel(inputs)
@@ -110,15 +119,15 @@ def customBiodegrade(model, train_loader, val_loader, optimizer, epoch): #this i
                 print('  batch {} loss: {}'.format(idx + 1, last_loss))
                 tb_x = e * len(train_loader) + idx + 1
                 running_loss = 0.
-        #implement method of evaluating the loss and validation every epoch here
+        # implement method of evaluating the loss and validation every epoch here
         customModel.eval()
         val_loss = 0.0
-        #should be the same process as above, just with the validation loader
+        # should be the same process as above, just with the validation loader
         total_correct = 0
         total_samples = 0
         print(f"there are {len(val_loader)} in val loader")
         for i, (inputs, labels) in enumerate(val_loader):
-            #check the size of val_loader here
+            # check the size of val_loader here
 
             customModel.eval()
 
@@ -143,9 +152,10 @@ def customBiodegrade(model, train_loader, val_loader, optimizer, epoch): #this i
     plt.show()
     print("MODEL ACCURACY ON FOLD:", np.mean(accuracies))
     print(" ")
-    #implement method of evaluating the loss and validation every train cycle here
+    # implement method of evaluating the loss and validation every train cycle here
 
-#trfm, learning_rate, opt, epochs, batch_size
+
+# trfm, learning_rate, opt, epochs, batch_size
 def _train():
     dataset = pd.read_csv('Data/all_RB.csv')
     smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
@@ -154,11 +164,12 @@ def _train():
     print(f'{smiles_train.shape}, the datatype is {type(smiles_train)}')
     labels_train = dataset['Class'].values
 
-    #you need to shuffle before you split because otherwise you'll get training data with only biodegradable chemicals and validation data with only non biodegradable data, and stuff like that
+    # you need to shuffle before you split because otherwise you'll get training data with only biodegradable chemicals and validation data with only non biodegradable data, and stuff like that
     kfold = StratifiedKFold(n_splits=10, shuffle=True)
     overallAverageList = []
     for train_index, test_index in kfold.split(smiles_train, labels_train):
-        x_train, x_val, y_train, y_val = smiles_train[train_index], smiles_train[test_index], labels_train[train_index], labels_train[test_index]
+        x_train, x_val, y_train, y_val = smiles_train[train_index], smiles_train[test_index], labels_train[train_index], \
+        labels_train[test_index]
         currentAverageDict = testBiodegrade(x_train, y_train, x_val, y_val, 20)
         print(currentAverageDict)
         overallAverageList.append(currentAverageDict['auc mean'])
@@ -166,9 +177,10 @@ def _train():
     overallAverage = np.mean(overallAverageList)
     print(f"Process is done! The overall mean score is {overallAverage}")
 
+
 def _train2():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    #need to go back and replace with Data/all_RB.csv
+    # need to go back and replace with Data/all_RB.csv
     dataset = pd.read_csv('Data/all_RB.csv')
     smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
     smilesID, _ = get_array(smiles_split)
@@ -200,5 +212,7 @@ def _train2():
 
         # Train the model on the current fold
         customBiodegrade(model, train_loader, test_loader, optimizer, epoch)
-#_train() #this one is fully operational
-_train2() #this one isn't (still need to create method of evaluating accuracy)
+
+
+# _train() #this one is fully operational
+_train2()  # this one isn't (still need to create method of evaluating accuracy)
