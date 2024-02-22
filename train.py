@@ -18,7 +18,7 @@ from torch.utils.data import Dataset
 import os
 import math
 import argparse
-from build_vocab import WordVocab
+from Scripts.build_vocab import WordVocab
 from utils import split
 from pretrain_trfm import TrfmSeq2seq
 from classifier import classify
@@ -81,8 +81,27 @@ def testBiodegrade(smilesTrain, labelsTrain, smilesTest, labelsTest, n_repeats):
     ret['auc std'] = np.std(auc)
     return ret
 
-def customBiodegrade(model, train_loader, val_loader, optimizer, epoch): #this is an entire training loop, NOT just one epoch
+"""def validate(customModel, val_loader, optimizer, loss_fn):
+    for i, (inputs, labels) in enumerate(val_loader):
+        # check the size of val_loader here
 
+        customModel.eval()
+
+        outputs = customModel(inputs)
+        outputs = outputs.to(torch.float32)
+        labels = labels.to(torch.float32)
+        _, predicted = torch.max(outputs, 1)
+
+        loss = loss_fn(outputs.squeeze(-1), labels)
+        val_loss += loss.item()
+        total_correct += (predicted == labels).sum().item()
+        total_samples += labels.size(0)
+    accuracy = 100 * total_correct / total_samples
+    print(f'Epoch {e + 1}: Accuracy = {accuracy:.2f}%')
+    accuracies.append(accuracy)"""
+
+
+def customBiodegrade(model, train_loader, val_loader, optimizer, epoch): #this is an entire training loop, NOT just one epoch
     customModel = model
     loss_fn = torch.nn.BCELoss()
     n_epochs = 40
@@ -92,24 +111,21 @@ def customBiodegrade(model, train_loader, val_loader, optimizer, epoch): #this i
         epoch_loss = 0
         running_loss = 0
         for idx, (inputs, labels) in enumerate(train_loader):
+            print("LABELS- ", labels)
             customModel.train()
             #clear gradient
-            optimizer.zero_grad()
 
             outputs = customModel(inputs)
             outputs = outputs.to(torch.float32)
             labels = labels.to(torch.float32)
 
+            print(f'output size is {outputs.size()} while label size is {labels.size()}')
+
             loss = loss_fn(outputs.squeeze(), labels)
+            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
-            epoch_loss += outputs.shape[0] * loss.item()
-            if idx % 2 == 0:
-                last_loss = running_loss / 1000  # loss per batch
-                print('  batch {} loss: {}'.format(idx + 1, last_loss))
-                tb_x = e * len(train_loader) + idx + 1
-                running_loss = 0.
+            print(loss)
         #implement method of evaluating the loss and validation every epoch here
         customModel.eval()
         val_loss = 0.0
@@ -117,24 +133,6 @@ def customBiodegrade(model, train_loader, val_loader, optimizer, epoch): #this i
         total_correct = 0
         total_samples = 0
         print(f"there are {len(val_loader)} in val loader")
-        for i, (inputs, labels) in enumerate(val_loader):
-            #check the size of val_loader here
-
-            customModel.eval()
-
-            outputs = customModel(inputs)
-            outputs = outputs.to(torch.float32)
-            labels = labels.to(torch.float32)
-            _, predicted = torch.max(outputs, 1)
-
-            loss = loss_fn(outputs.squeeze(-1), labels)
-            val_loss += loss.item()
-            total_correct += (predicted == labels).sum().item()
-            total_samples += labels.size(0)
-        accuracy = 100 * total_correct / total_samples
-        print(f'Epoch {e + 1}: Accuracy = {accuracy:.2f}%')
-        accuracies.append(accuracy)
-
     fig, ax = plt.subplots()
     ax.plot(range(epoch), accuracies)
     ax.set_xlabel('Epoch')
