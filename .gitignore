@@ -5,3 +5,4 @@ smilesPretrained.pkl
 bioDataset.xlsx
 *.txt
 *.pkl
+__pycache__
