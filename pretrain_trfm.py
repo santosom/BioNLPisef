@@ -12,7 +12,7 @@ from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from build_vocab import WordVocab
+from Scripts import build_vocab
 from dataset import Seq2seqDataset
 
 PAD = 0
@@ -136,7 +136,7 @@ def main():
     assert torch.cuda.is_available()
 
     print('Loading dataset...')
-    vocab = WordVocab.load_vocab(args.vocab)
+    vocab = build_vocab.WordVocab.load_vocab(args.vocab)
     dataset = Seq2seqDataset(pd.read_csv(args.data)['canonical_smiles'].values, vocab)
     test_size = 10000
     train, test = torch.utils.data.random_split(dataset, [len(dataset) - test_size, test_size])
