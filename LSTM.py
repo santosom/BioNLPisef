@@ -33,7 +33,7 @@ LEN_VOCAB = 45
 trfm = TrfmSeq2seq(LEN_VOCAB, 256, LEN_VOCAB, 4)
 trfm.load_state_dict(torch.load('Data/smilesPretrained.pkl', map_location=torch.device('cpu')), strict=False)
 #change back to all_RB.csv
-dataset = pd.read_csv('Data/baby_dataset.csv')
+dataset = pd.read_csv('Data/all_RB.csv')
 
 """        #embeds = self.word_embeddings(smiles)
         lstm_out, _ = self.lstm(vocab_size, hidden_dim)
@@ -65,13 +65,6 @@ def get_array(smiles):
 
 class LSTM(nn.Module):
     def __init__(self, hide_dim, n_layers):
-        """Define LSTM model
-        :param vocab_size: initial size of data fed into network
-        :param embedding_dim: length of embed to feed into lstm
-        :param hidden_dim: length of data outputted from lstm layer
-        :param n_layers: num of layers in lstm layer
-        :param tagset_size: number of class tags (maybe?)
-         """
         self.hide_dim = hide_dim
         super(LSTM, self).__init__()
         self.lstm = nn.LSTM(input_size=1, hidden_size=hide_dim, num_layers=n_layers, batch_first=True)
@@ -101,6 +94,7 @@ def trainLoop(model, epochs, trainingData, optimizer, criterion):
     model.train()
 
     for e in range(epochs):
+        print('EPOCH ', e)
         for batch, (inputs, labels) in enumerate(trainingData):
             optimizer.zero_grad()
 
@@ -109,18 +103,15 @@ def trainLoop(model, epochs, trainingData, optimizer, criterion):
             #outputs = outputs.squeeze()
             labels = labels.to(torch.float32)
             labels = labels.unsqueeze(1)
-            evalTensor(outputs)
 
-            print(f'output shape is currently {outputs.size()} while label shape is currently {labels.size()}')
-
+            print('reached loss stage')
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
+            print('finished updating model weights')
 
             acc = accuracy(outputs, labels)
             print("accuracy rn is ", acc, " and the loss is ", loss.item())
-
-
 def formatAndFold():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
