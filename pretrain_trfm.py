@@ -11,8 +11,8 @@ from torch.autograd import Variable
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from Scripts.build_vocab import WordVocab
 
-from build_vocab import WordVocab
 from dataset import Seq2seqDataset
 
 PAD = 0

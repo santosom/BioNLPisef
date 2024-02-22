@@ -70,3 +70,20 @@ class biodegradeDataset(Dataset):
         text = self.smiles[idx]
         # sample = {"Text": text, "Class": label}
         return text, label
+
+
+# class biodegradeDataset(Dataset):
+#     def __init__(self, smiles, labels, char_to_index):
+#         self.smiles = smiles
+#         self.labels = labels
+#         self.char_to_index = char_to_index  # Dictionary mapping character to integer index
+#
+#     def __len__(self):
+#         return len(self.smiles)
+#
+#     def __getitem__(self, idx):
+#         # Convert SMILES string to a sequence of indices
+#         sequence = [self.char_to_index[char] for char in self.smiles[idx]]
+#         sequence_tensor = torch.tensor(sequence, dtype=torch.long)  # Ensure it's a LongTensor
+#         label_tensor = torch.tensor(self.labels[idx], dtype=torch.float)  # Assuming binary classification
+#         return sequence_tensor, label_tensor

@@ -7,8 +7,8 @@ from utils import split
 
 def main():
     parser = argparse.ArgumentParser(description='Build a corpus file')
-    parser.add_argument('--in_path', '-i', type=str, default='../Data/chembl_24.csv', help='input file')
-    parser.add_argument('--out_path', '-o', type=str, default='../Data/chembl24_corpus.txt', help='output file')
+    parser.add_argument('--in_path', '-i', type=str, default='Data/chembl_24.csv', help='input file')
+    parser.add_argument('--out_path', '-o', type=str, default='Data/chembl24_corpus.txt', help='output file')
     args = parser.parse_args()
 
     smiles = pd.read_csv(args.in_path)['canonical_smiles'].values

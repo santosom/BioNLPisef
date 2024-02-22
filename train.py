@@ -21,12 +21,14 @@ import argparse
 
 import Scripts.build_vocab
 from Scripts import build_vocab
+from extend_trfm import ExtendedTrfmSeq2seqForBinaryClassification
 from utils import split
 from pretrain_trfm import TrfmSeq2seq
 from classifier import classify
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split, StratifiedKFold, StratifiedShuffleSplit, KFold
 from dataset import biodegradeDataset
+from Scripts.build_vocab import WordVocab
 
 pad_index = 0
 unk_index = 1
@@ -35,13 +37,15 @@ sos_index = 3
 mask_index = 4
 batch_size = 64
 
-vocab = Scripts.build_vocab.WordVocab.load_vocab('data/vocab.pkl')
+vocab = WordVocab.load_vocab('Data/vocab.pkl')
 len_vocab = 45
 print("vocab length: ", len(vocab))
 
 print("hello world")
 trfm = TrfmSeq2seq(len_vocab, 256, len_vocab, 4)
 trfm.load_state_dict(torch.load('Data/smilesPretrained.pkl', map_location=torch.device('cpu')), strict=False)
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # decrease this learning rate if the model performs poorly
 df_train = pd.read_csv('Data/RB_train.csv')
@@ -79,20 +83,29 @@ def testBiodegrade(smilesTrain, labelsTrain, smilesTest, labelsTest,
     print('biodegrade method has been called')
     auc = np.empty(n_repeats)
     for i in range(n_repeats):
-        clf = MLPClassifier(max_iter=1000)
-        clf.fit(smilesTrain, labelsTrain)
-        y_score = clf.predict_proba(smilesTest)
+        # clf = MLPClassifier(max_iter=1000)
+        clf = trfm
+        # clf.fit(smilesTrain, labelsTrain)
+        # y_score = clf.predict_proba(smilesTest)
+
+        ## write code that will get the y_score from the model
+        ## error is TypeError: embedding(): argument 'indices' (position 2) must be Tensor, not numpy.ndarray
+        smilesTest = torch.tensor(smilesTest).to(device).long()
+        # maybe; b_input_ids = torch.tensor(b_input_ids).to(device).long()
+
+        y_score = clf(smilesTest)
+
         auc[i] = roc_auc_score(labelsTest, y_score[:, 1])
+        print('AUC {:d}: {:.4f}'.format(i, auc[i]))
     ret = {}
     ret['auc mean'] = np.mean(auc)
     ret['auc std'] = np.std(auc)
     return ret
 
 
-def customBiodegrade(model, train_loader, val_loader, optimizer,
+def customBiodegrade(customModel, train_loader, val_loader, optimizer,
                      epoch):  # this is an entire training loop, NOT just one epoch
-
-    customModel = model
+    global b_input_ids
     loss_fn = torch.nn.BCELoss()
     n_epochs = 40
     # define training loop
@@ -101,24 +114,38 @@ def customBiodegrade(model, train_loader, val_loader, optimizer,
         epoch_loss = 0
         running_loss = 0
         for idx, (inputs, labels) in enumerate(train_loader):
-            customModel.train()
-            # clear gradient
-            optimizer.zero_grad()
+            print(f'Epoch {e + 1}, Batch {idx + 1}')
+            print(f'  Inputs: {inputs}, Labels: {labels}')
+            # print the length of inputs and labels
+            print(f'  Inputs len: {len(inputs)}, Labels len: {len(labels)}')
 
-            outputs = customModel(inputs)
-            outputs = outputs.to(torch.float32)
-            labels = labels.to(torch.float32)
+            customModel.train()  # Ensure the model is in training mode
 
-            loss = loss_fn(outputs.squeeze(), labels)
-            loss.backward()
-            optimizer.step()
+            optimizer.zero_grad()  # Clear gradients for the next train step
 
-            epoch_loss += outputs.shape[0] * loss.item()
+            # inputs = inputs.to(torch.float32)  # Ensure inputs are float32
+            # labels = labels.to(torch.float32)  # Ensure labels are float32 for consistency in loss calculation
+
+
+            print(f'  Batch {idx + 1} Inputs: {inputs.shape}, Labels: {labels.shape}')
+            b_input_ids = torch.tensor(inputs).to(device).long()
+            outputs = customModel(b_input_ids)
+            # outputs = outputs.squeeze()  # Squeeze outputs if necessary to match the dimensions of 'labels'
+
+            loss = loss_fn(outputs, labels)  # Compute the loss between the outputs and the labels
+            loss.backward()  # Backward pass: compute gradient of the loss with respect to model parameters
+            optimizer.step()  # Perform a single optimization step (parameter update)
+
+            epoch_loss += outputs.shape[0] * loss.item()  # Update total loss for the epoch
+
+            # Print loss every 2 batches
             if idx % 2 == 0:
-                last_loss = running_loss / 1000  # loss per batch
-                print('  batch {} loss: {}'.format(idx + 1, last_loss))
-                tb_x = e * len(train_loader) + idx + 1
-                running_loss = 0.
+                print(f'  Batch {idx + 1} Loss: {loss.item()}')
+
+                # Reset running_loss if needed or perform additional operations
+                # It seems there was an intent to track 'running_loss' but it's not updated within the loop.
+                # Ensure you initialize 'running_loss' before the loop and update it appropriately if you plan to use it.
+
         # implement method of evaluating the loss and validation every epoch here
         customModel.eval()
         val_loss = 0.0
@@ -170,7 +197,7 @@ def _train():
     for train_index, test_index in kfold.split(smiles_train, labels_train):
         x_train, x_val, y_train, y_val = smiles_train[train_index], smiles_train[test_index], labels_train[train_index], \
         labels_train[test_index]
-        currentAverageDict = testBiodegrade(x_train, y_train, x_val, y_val, 20)
+        currentAverageDict = testBiodegrade(x_train, y_train, x_val, y_val, 1) ## HACK make this 20
         print(currentAverageDict)
         overallAverageList.append(currentAverageDict['auc mean'])
 
@@ -183,10 +210,19 @@ def _train2():
     # need to go back and replace with Data/all_RB.csv
     dataset = pd.read_csv('Data/all_RB.csv')
     smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
+    print(smiles_split)
     smilesID, _ = get_array(smiles_split)
+    print(smilesID)
     smiles_train = trfm.encode(torch.t(smilesID))
+    ## conert smiles_train to a tensor with dtype float32
+    smiles_train = torch.tensor(smiles_train, dtype=torch.float32)
     labels_train = dataset['Class'].values
     epoch = 10
+
+#         sequence = [self.char_to_index[char] for char in self.smiles[idx]]
+#         sequence_tensor = torch.tensor(sequence, dtype=torch.long)  # Ensure it's a LongTensor
+#         label_tensor = torch.tensor(self.labels[idx], dtype=torch.float)  # Assuming binary classification
+
 
     kfold = StratifiedKFold(n_splits=4, shuffle=True)
 
@@ -206,13 +242,19 @@ def _train2():
 
         # Initialize the model and optimizer
         learning_rate = .01
-        model = classify(1024, 64).to(device)
+        # model = classify(1024, 64).to(device)
+        # trfm.classifier = classify(1024, 64).to(device)
+        # replace 45 with the length of the vocab
+        # foo = ExtendedTrfmSeq2seqForBinaryClassification(45, 256, 45, 4).to(device)
         optimizer = optim.Adam(trfm.parameters(), lr=learning_rate)
+
+        # lock down all the existing layers other than our new layers so we only train the new layers
+
         print('intialized model and optimizer')
 
         # Train the model on the current fold
-        customBiodegrade(model, train_loader, test_loader, optimizer, epoch)
+        customBiodegrade(trfm, train_loader, test_loader, optimizer, epoch)
 
 
-# _train() #this one is fully operational
-_train2()  # this one isn't (still need to create method of evaluating accuracy)
+_train() #this one is fully operational
+# _train2()  # this one isn't (still need to create method of evaluating accuracy)
