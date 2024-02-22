@@ -111,7 +111,7 @@ def customBiodegrade(model, train_loader, val_loader, optimizer, epoch): #this i
         epoch_loss = 0
         running_loss = 0
         for idx, (inputs, labels) in enumerate(train_loader):
-            print("LABELS- ", labels)
+            print("LABELS- ", labels, " and the type is ", type(labels))
             customModel.train()
             #clear gradient
 

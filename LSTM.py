@@ -102,20 +102,14 @@ def trainLoop(model, epochs, trainingData, optimizer, criterion):
 
     for e in range(epochs):
         for batch, (inputs, labels) in enumerate(trainingData):
-            smiles = torch.from_numpy(inputs)
-            smiles = smiles.type(torch.FloatTensor)
-            smiles = smiles.unsqueeze(0)
-            evalTensor(labels)
-            print(type(labels))
-            labels = torch.Tensor(labels)
-
             optimizer.zero_grad()
 
-            outputs = model(smiles)
+            outputs = model(inputs)
             outputs = outputs.to(torch.float32)
             #outputs = outputs.squeeze()
             labels = labels.to(torch.float32)
             labels = labels.unsqueeze(1)
+            evalTensor(outputs)
 
             print(f'output shape is currently {outputs.size()} while label shape is currently {labels.size()}')
 
@@ -159,7 +153,7 @@ def formatAndFold():
         model = LSTM(50, 1)
         loss_fn = torch.nn.BCELoss()
 
-        trainLoop(model, 20, trainingData, optimizer, loss_fn)
+        trainLoop(model, 20, train_loader, optimizer, loss_fn)
 
 formatAndFold()
         # Train the model on the current fold
