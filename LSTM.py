@@ -152,7 +152,6 @@ def formatAndFold():
         learning_rate = .01
 
         optimizer = optim.Adam(trfm.parameters(), lr=learning_rate)
-        #model = LSTM(2, 200, 64, 2, 1)
         model = LSTM(50, 1)
         loss_fn = torch.nn.BCELoss()
 
