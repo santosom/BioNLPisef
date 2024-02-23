@@ -99,13 +99,13 @@ def trainLoop(model, epochs, trainingData, optimizer, criterion):
     epoch_acc = 0.0
     model.train()
 
-    epoch_loss = 0.0
-    correct_predictions = 0
-    total_predictions = 0
-    all_labels = []
-    all_predictions = []
 
     for e in range(epochs):
+        epoch_loss = 0.0
+        correct_predictions = 0
+        total_predictions = 0
+        all_labels = []
+        all_predictions = []
         print('EPOCH ', e)
         for batch, (inputs, labels) in enumerate(trainingData):
             optimizer.zero_grad()
@@ -177,7 +177,7 @@ def formatAndFold():
         )
 
         # Initialize the model and optimizer
-        learning_rate = .01
+        learning_rate = .0001
 
         optimizer = optim.Adam(trfm.parameters(), lr=learning_rate)
         model = LSTM(1024, 1)
