@@ -18,6 +18,7 @@ from utils import split
 from pretrain_trfm import TrfmSeq2seq
 from sklearn.model_selection import train_test_split, StratifiedKFold, StratifiedShuffleSplit, KFold
 from dataset import biodegradeDataset
+from torch.nn.functional import normalize
 
 pad_index = 0
 unk_index = 1
@@ -87,6 +88,9 @@ def accuracy(predicted, actual):
 def evalTensor(t):
     torch.set_printoptions(threshold=10000)
     print(t)
+    for val in t:
+        if (val > 1) or (val < 0):
+            print('VALUE IN TENSOR OUT OF BOUNDS. VALUE IS ', val)
 
 def trainLoop(model, epochs, trainingData, optimizer, criterion):
     epoch_loss = 0.0
@@ -97,12 +101,18 @@ def trainLoop(model, epochs, trainingData, optimizer, criterion):
         print('EPOCH ', e)
         for batch, (inputs, labels) in enumerate(trainingData):
             optimizer.zero_grad()
+            inputs = normalize(inputs, p=1.0, dim=0)
 
             outputs = model(inputs)
             outputs = outputs.to(torch.float32)
             #outputs = outputs.squeeze()
             labels = labels.to(torch.float32)
             labels = labels.unsqueeze(1)
+
+            print('OUTPUT EVAL')
+            evalTensor(outputs)
+            print('LABELS EVAL')
+            evalTensor(labels)
 
             print('reached loss stage')
             loss = criterion(outputs, labels)
