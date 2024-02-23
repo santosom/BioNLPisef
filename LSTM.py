@@ -126,12 +126,13 @@ def trainLoop(model, epochs, trainingData, optimizer, criterion):
             loss.backward()
             optimizer.step()
             pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-            print('finished updating model weights. loss is ', loss, '. params being updated are', list(model.parameters())[0].grad)
+            # print('finished updating model weights. loss is ', loss, '. params being updated are', list(model.parameters())[0].grad)
 
             epoch_loss += loss.item()
 
             # Convert outputs to binary predictions
             preds = outputs.round()  # Assuming sigmoid activation at the output; adjust if necessary
+            # print(preds)
 
             # Update total and correct predictions for accuracy calculation
             total_predictions += labels.size(0)
@@ -160,6 +161,10 @@ def formatAndFold():
     kfold = StratifiedKFold(n_splits=2, shuffle=True)
     epoch = 10
 
+    # Initialize the model and optimizer
+    learning_rate = .001
+    model = LSTM(1024, 1)
+
     for train_index, test_index in kfold.split(smiles_train, labels_train):
         trainingData = biodegradeDataset(smiles_train[train_index], labels_train[train_index])
         testingData = biodegradeDataset(smiles_train[test_index], labels_train[test_index])
@@ -174,14 +179,11 @@ def formatAndFold():
             batch_size=batch_size
         )
 
-        # Initialize the model and optimizer
-        learning_rate = .00000000000000001
-
-        optimizer = optim.SGD(trfm.parameters(), lr=learning_rate)
-        model = LSTM(1024, 1)
+        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
         loss_fn = torch.nn.BCELoss()
 
         # change the number of epoch back to 20
-        trainLoop(model, 2, train_loader, optimizer, loss_fn)
+        trainLoop(model, 3, train_loader, optimizer, loss_fn)
+        exit(0)
 
 formatAndFold()
