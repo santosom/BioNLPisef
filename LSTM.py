@@ -97,16 +97,14 @@ def evalTensor(t):
 def trainLoop(model, epochs, trainingData, optimizer, criterion):
     epoch_loss = 0.0
     epoch_acc = 0.0
-    model.train()
-
-    epoch_loss = 0.0
-    correct_predictions = 0
-    total_predictions = 0
-    all_labels = []
-    all_predictions = []
 
     for e in range(epochs):
-        print('EPOCH ', e)
+        model.train()
+        epoch_loss = 0.0
+        correct_predictions = 0
+        total_predictions = 0
+        all_labels = []
+        all_predictions = []
         for batch, (inputs, labels) in enumerate(trainingData):
             optimizer.zero_grad()
             inputs = normalize(inputs, p=1.0, dim=0)
