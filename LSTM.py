@@ -128,7 +128,7 @@ def trainLoop(model, epochs, trainingData, optimizer, criterion):
             loss.backward()
             optimizer.step()
             pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-            # print('finished updating model weights', pytorch_total_params)
+            print('finished updating model weights. loss is ', loss, '. params being updated are', list(model.parameters())[0].grad)
 
             epoch_loss += loss.item()
 
@@ -177,9 +177,9 @@ def formatAndFold():
         )
 
         # Initialize the model and optimizer
-        learning_rate = .01
+        learning_rate = .00000000000000001
 
-        optimizer = optim.Adam(trfm.parameters(), lr=learning_rate)
+        optimizer = optim.SGD(trfm.parameters(), lr=learning_rate)
         model = LSTM(1024, 1)
         loss_fn = torch.nn.BCELoss()
 
