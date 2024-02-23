@@ -7,7 +7,7 @@ import rdkit
 from rdkit import Chem
 from rdkit.Chem import Draw, MolFromSmiles, MolToSmiles
 
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, precision_recall_fscore_support
 from torch import optim
 from tqdm import tqdm
 import torch.nn.functional as F
@@ -99,6 +99,12 @@ def trainLoop(model, epochs, trainingData, optimizer, criterion):
     epoch_acc = 0.0
     model.train()
 
+    epoch_loss = 0.0
+    correct_predictions = 0
+    total_predictions = 0
+    all_labels = []
+    all_predictions = []
+
     for e in range(epochs):
         print('EPOCH ', e)
         for batch, (inputs, labels) in enumerate(trainingData):
@@ -111,21 +117,40 @@ def trainLoop(model, epochs, trainingData, optimizer, criterion):
             labels = labels.to(torch.float32)
             labels = labels.unsqueeze(1)
 
-            print('OUTPUT EVAL')
-            evalTensor(outputs)
-            print('LABELS EVAL')
-            evalTensor(labels)
+            # print('OUTPUT EVAL')
+            # evalTensor(outputs)
+            # print('LABELS EVAL')
+            # evalTensor(labels)
 
             pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-            print('reached loss stage', pytorch_total_params)
+            # print('reached loss stage', pytorch_total_params)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
             pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-            print('finished updating model weights', pytorch_total_params)
+            # print('finished updating model weights', pytorch_total_params)
 
-"""            acc = accuracy(outputs, labels)
-            print("accuracy rn is ", acc, " and the loss is ", loss.item())"""
+            epoch_loss += loss.item()
+
+            # Convert outputs to binary predictions
+            preds = outputs.round()  # Assuming sigmoid activation at the output; adjust if necessary
+
+            # Update total and correct predictions for accuracy calculation
+            total_predictions += labels.size(0)
+            correct_predictions += (preds == labels).sum().item()
+
+            # Store labels and predictions for F1 score calculation
+            all_labels.extend(labels.view(-1).tolist())
+            all_predictions.extend(preds.view(-1).tolist())
+
+        # Calculate epoch accuracy
+        epoch_acc = correct_predictions / total_predictions
+
+        # Calculate precision, recall, and F1 score
+        precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_predictions, average='binary')
+
+        print(f'Epoch {e} - Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}')
+
 def formatAndFold():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
@@ -133,7 +158,8 @@ def formatAndFold():
     smiles_train = trfm.encode(torch.t(smilesID))
     labels_train = dataset['Class'].values
 
-    kfold = StratifiedKFold(n_splits=3, shuffle=True)
+    # change n_splits back to 3
+    kfold = StratifiedKFold(n_splits=2, shuffle=True)
     epoch = 10
 
     for train_index, test_index in kfold.split(smiles_train, labels_train):
@@ -157,6 +183,7 @@ def formatAndFold():
         model = LSTM(1024, 1)
         loss_fn = torch.nn.BCELoss()
 
-        trainLoop(model, 20, train_loader, optimizer, loss_fn)
+        # change the number of epoch back to 20
+        trainLoop(model, 2, train_loader, optimizer, loss_fn)
 
 formatAndFold()
