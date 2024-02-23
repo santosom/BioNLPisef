@@ -70,7 +70,7 @@ class LSTM(nn.Module):
     def __init__(self, hide_dim, n_layers):
         self.hide_dim = hide_dim
         super(LSTM, self).__init__()
-        self.lstm = nn.LSTM(input_size=1, hidden_size=hide_dim, num_layers=n_layers, batch_first=True)
+        self.lstm = nn.LSTM(input_size=1024, hidden_size=hide_dim, num_layers=n_layers, batch_first=True)
         self.linear = nn.Linear(hide_dim, 1)
         self.sigmoid = nn.Sigmoid()
 
@@ -116,11 +116,13 @@ def trainLoop(model, epochs, trainingData, optimizer, criterion):
             print('LABELS EVAL')
             evalTensor(labels)
 
-            print('reached loss stage')
+            pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+            print('reached loss stage', pytorch_total_params)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-            print('finished updating model weights')
+            pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+            print('finished updating model weights', pytorch_total_params)
 
 """            acc = accuracy(outputs, labels)
             print("accuracy rn is ", acc, " and the loss is ", loss.item())"""
@@ -152,7 +154,7 @@ def formatAndFold():
         learning_rate = .01
 
         optimizer = optim.Adam(trfm.parameters(), lr=learning_rate)
-        model = LSTM(50, 1)
+        model = LSTM(1024, 1)
         loss_fn = torch.nn.BCELoss()
 
         trainLoop(model, 20, train_loader, optimizer, loss_fn)
