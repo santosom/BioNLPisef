@@ -20,6 +20,8 @@ from sklearn.model_selection import train_test_split, StratifiedKFold, Stratifie
 from dataset import biodegradeDataset
 from torch.nn.functional import normalize
 
+print('hello hello?')
+
 pad_index = 0
 unk_index = 1
 eos_index = 2
@@ -78,12 +80,12 @@ class LSTM(nn.Module):
         x = self.sigmoid(x)
         return torch.sigmoid(x)
 
-def accuracy(predicted, actual):
+"""def accuracy(predicted, actual):
     roundedPredict = torch.round(predicted)
 
     correct = (roundedPredict == actual).float()
     acc = correct.sum() / len(correct)
-    return acc
+    return acc"""
 
 def evalTensor(t):
     torch.set_printoptions(threshold=10000)
@@ -120,8 +122,8 @@ def trainLoop(model, epochs, trainingData, optimizer, criterion):
             optimizer.step()
             print('finished updating model weights')
 
-            acc = accuracy(outputs, labels)
-            print("accuracy rn is ", acc, " and the loss is ", loss.item())
+"""            acc = accuracy(outputs, labels)
+            print("accuracy rn is ", acc, " and the loss is ", loss.item())"""
 def formatAndFold():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
@@ -157,4 +159,3 @@ def formatAndFold():
         trainLoop(model, 20, train_loader, optimizer, loss_fn)
 
 formatAndFold()
-        # Train the model on the current fold
