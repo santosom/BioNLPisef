@@ -118,7 +118,9 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
         total_predictions = 0
         all_labels = []
         all_predictions = []
+        epoch_records = 0
         for batch, (inputs, labels) in enumerate(training_data):
+            epoch_records += labels.size(0)
             model.train()
             optimizer.zero_grad()
 
@@ -159,14 +161,16 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
 
         # Calculate precision, recall, and F1 score
         precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_predictions, average='binary')
-        print(f'  Epoch {e} - Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}')
+        print(f'  Epoch {e} - Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f} Records: {epoch_records}')
 
     # evaluate the model
     model.eval()
     test_loss = 0
     correct = 0
+    total_validation_records = 0
     with torch.no_grad():
         for inputs, labels in testing_data:
+            total_validation_records += labels.size(0)
             inputs = normalize(inputs, p=1.0, dim=0)
             outputs = model(inputs)
             outputs = outputs.to(torch.float32)
@@ -178,7 +182,11 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
 
     test_loss /= len(testing_data.dataset)
     accuracy = 100.0 * correct / len(testing_data.dataset)
+    print('Validation records: ', total_validation_records)
     print(f'Validation: Fold {fold} Average loss: {test_loss:.4f} Accuracy: {correct}/{len(testing_data.dataset)} ({accuracy:.2f}%)')
+    # print the size of the testing data
+
+    print()
 
 
 def formatAndFold():
@@ -188,14 +196,18 @@ def formatAndFold():
     smiles_train = trfm.encode(torch.t(smilesID))
     labels_train = dataset['Class'].values
 
-    # change n_splits back to 3
-    kfold = StratifiedKFold(n_splits=5, shuffle=True)
+    # critical hyperparameters
     epoch = 10
+    ksplits = 5
+    learning_rate = 0.001
 
     # Initialize the model and optimizer
-    learning_rate = .0001
+    model = LSTM(1024, 1)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    loss_fn = torch.nn.BCELoss()
 
     fold = 0
+    kfold = StratifiedKFold(n_splits=ksplits, shuffle=True)
     for train_index, test_index in kfold.split(smiles_train, labels_train):
         fold = fold + 1
         training_data = biodegradeDataset(smiles_train[train_index], labels_train[train_index])
@@ -211,11 +223,7 @@ def formatAndFold():
             batch_size=batch_size
         )
 
-        model = LSTM(1024, 1)
-        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-        loss_fn = torch.nn.BCELoss()
-
         # change the number of epoch back to 20
-        trainLoop(model, 10, train_loader, test_loader, optimizer, loss_fn, fold)
+        trainLoop(model, epoch, train_loader, test_loader, optimizer, loss_fn, fold)
 
 formatAndFold()
