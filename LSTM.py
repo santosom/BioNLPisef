@@ -9,6 +9,7 @@ from rdkit.Chem import Draw, MolFromSmiles, MolToSmiles
 
 from sklearn.metrics import roc_auc_score, precision_recall_fscore_support
 from torch import optim
+from torch.ao.quantization import quantize_dynamic
 from tqdm import tqdm
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -67,18 +68,25 @@ def get_array(smiles):
 
 
 class LSTM(nn.Module):
-    def __init__(self, hide_dim, n_layers):
-        self.hide_dim = hide_dim
+    def __init__(self, hide_dim, n_layers, pretrained_embeddings=None):
         super(LSTM, self).__init__()
+        self.hide_dim = hide_dim
+        self.embedding = nn.Embedding(LEN_VOCAB, 1024)
+        if pretrained_embeddings is not None:
+            self.embedding.weight = nn.Parameter(pretrained_embeddings)
+            self.embedding.weight.requires_grad = False  # Freeze embeddings
         self.lstm = nn.LSTM(input_size=1024, hidden_size=hide_dim, num_layers=n_layers, batch_first=True)
-        self.embedding = nn.Embedding(LEN_VOCAB, 300)
-        self.linear = nn.Linear(hide_dim, 1)
+        self.dropout = nn.Dropout(0.5)
+        self.fc = nn.Linear(hide_dim, 1)
         self.sigmoid = nn.Sigmoid()
-        self.dropout = nn.Dropout(0.2)
 
     def forward(self, x):
+        x = x.to(torch.long)
+        x = self.embedding(x)  # Assuming x is indices that need to be embedded
         x, _ = self.lstm(x)
-        x = self.linear(x)
+        x = x[:, -1, :]  # Assuming you want the last hidden state of the LSTM
+        x = self.dropout(x)
+        x = self.fc(x)
         x = self.sigmoid(x)
         return torch.sigmoid(x)
 
