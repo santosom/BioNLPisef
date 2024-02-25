@@ -9,6 +9,7 @@ from rdkit.Chem import Draw, MolFromSmiles, MolToSmiles
 
 from sklearn.metrics import roc_auc_score, precision_recall_fscore_support
 from torch import optim
+from torch.optim import lr_scheduler
 from tqdm import tqdm
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -109,7 +110,7 @@ def calculateAccuracy(outputs, labels):
     # print(f'Labels: {labels}')
     return 100 * (correct / len(labels))
 
-def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, fold):
+def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, fold, scheduler):
     epoch_loss = 0.0
     epoch_acc = 0.0
     e_lossListTrain = []
@@ -171,6 +172,11 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
             all_labels.extend(labels.view(-1).tolist())
             all_predictions.extend(preds.view(-1).tolist())
 
+        before_lr = optimizer.param_groups[0]["lr"]
+        scheduler.step()
+        after_lr = optimizer.param_groups[0]["lr"]
+        print("  Epoch %d: SGD lr %.4f -> %.4f" % (e, before_lr, after_lr))
+
         # Calculate epoch accuracy on training data
         epoch_acc = correct_predictions / total_predictions
         #print("EPOCH ACC ON TRAINING: ", epoch_acc)
@@ -217,7 +223,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
         precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_predictions, average='binary')
         precisionV, recallV, f1V, _ = precision_recall_fscore_support(valLabels, valPredictions, average='binary')
         print(f'  Epoch {e} Training - Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f} Records: {epoch_records}')
-        print(f'           Epoch {e} Validation - Loss: {test_loss: 4f}, Accuracy: {accuracy: .4f}, Precision: {precisionV:.4f}, Recall: {recallV:.4f}, F1 Score: {f1V:.4f}')
+        print(f'  Epoch {e} Validation - Loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Precision: {precisionV:.4f}, Recall: {recallV:.4f}, F1 Score: {f1V:.4f}')
 
         e_precisionListTrain.append(precision)
         e_precisionListVal.append(precisionV)
@@ -292,6 +298,7 @@ def formatAndFold():
     # Initialize the model and optimizer
     model = LSTM(1024, 2)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.3, total_iters=10)
     loss_fn = torch.nn.BCELoss()
 
     fold = 0
@@ -312,6 +319,6 @@ def formatAndFold():
         )
 
         # change the number of epoch back to 20
-        trainLoop(model, epoch, train_loader, test_loader, optimizer, loss_fn, fold)
+        trainLoop(model, epoch, train_loader, test_loader, optimizer, loss_fn, fold, scheduler)
 
 formatAndFold()
