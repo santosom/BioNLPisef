@@ -286,7 +286,7 @@ def formatAndFold():
     # critical hyperparameters
     epoch = 70
     ksplits = 5
-    learning_rate = 0.001
+    learning_rate = 0.002
 
     # Initialize the model and optimizer
     model = LSTM(1024, 4)
