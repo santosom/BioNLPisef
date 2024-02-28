@@ -27,7 +27,7 @@ unk_index = 1
 eos_index = 2
 sos_index = 3
 mask_index = 4
-batch_size = 100
+batch_size = 64
 
 rates = 2**np.arange(7)/80
 VOCAB = WordVocab.load_vocab('data/vocab.pkl')
@@ -74,12 +74,13 @@ class LSTM(nn.Module):
         self.embedding = nn.Embedding(LEN_VOCAB, 300)
         self.linear = nn.Linear(hide_dim, 1)
         self.sigmoid = nn.Sigmoid()
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0.3)
 
     def forward(self, x):
         x, _ = self.lstm(x)
-        x = self.dropout(x)
+        #linear is the dense layer here
         x = self.linear(x)
+        x = self.dropout(x)
         return torch.sigmoid(x)
 
 """def accuracy(predicted, actual):
@@ -154,7 +155,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
             outputs = outputs.to(torch.float32)
             test_loss = criterion(outputs, labels)
             accuracy = calculateAccuracy(outputs, labels)
-            print(f'    Batch: {batch} Loss: {test_loss.item():.4f} Accuracy: {accuracy:.2f}%')
+            #print(f'    Batch: {batch} Loss: {test_loss.item():.4f} Accuracy: {accuracy:.2f}%')
 
             epoch_loss += loss.item()
             lossListForEpoch.append(loss.item())
@@ -216,7 +217,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
         precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_predictions, average='binary')
         precisionV, recallV, f1V, _ = precision_recall_fscore_support(valLabels, valPredictions, average='binary')
         print(f'  Epoch {e} Training - Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f} Records: {epoch_records}')
-        print(f'  Epoch {e} Validation - Loss: {test_loss}, Accuracy: {accuracy}, Precision: {precisionV:.4f}, Recall: {recallV:.4f}, F1 Score: {f1V:.4f}')
+        print(f'           Epoch {e} Validation - Loss: {test_loss: 4f}, Accuracy: {accuracy: .4f}, Precision: {precisionV:.4f}, Recall: {recallV:.4f}, F1 Score: {f1V:.4f}')
 
         e_precisionListTrain.append(precision)
         e_precisionListVal.append(precisionV)
@@ -285,11 +286,11 @@ def formatAndFold():
 
     # critical hyperparameters
     epoch = 70
-    ksplits = 5
-    learning_rate = 0.002
+    ksplits = 3
+    learning_rate = 0.004
 
     # Initialize the model and optimizer
-    model = LSTM(1024, 4)
+    model = LSTM(1024, 2)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     loss_fn = torch.nn.BCELoss()
 
