@@ -139,7 +139,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
             model.train()
             optimizer.zero_grad()
 
-            inputs = normalize(inputs, p=1.0, dim=0)
+            inputs = normalize(inputs, p=2.0, dim=0)
             outputs = model(inputs)
             outputs = outputs.to(torch.float32)
             labels = labels.to(torch.float32)
@@ -192,7 +192,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
         with torch.no_grad():
             for inputs, labels in testing_data:
                 total_validation_records += labels.size(0)
-                inputs = normalize(inputs, p=1.0, dim=0)
+                inputs = normalize(inputs, p=2.0, dim=0)
                 outputs = model(inputs)
                 outputs = outputs.to(torch.float32)
                 labels = labels.to(torch.float32)
@@ -285,9 +285,9 @@ def formatAndFold():
     labels_train = dataset['Class'].values
 
     # critical hyperparameters
-    epoch = 70
-    ksplits = 3
-    learning_rate = 0.004
+    epoch = 50
+    ksplits = 4
+    learning_rate = 0.0045
 
     # Initialize the model and optimizer
     model = LSTM(1024, 2)
