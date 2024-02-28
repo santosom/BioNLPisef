@@ -74,7 +74,7 @@ class LSTM(nn.Module):
         self.embedding = nn.Embedding(LEN_VOCAB, 300)
         self.linear = nn.Linear(hide_dim, 1)
         self.sigmoid = nn.Sigmoid()
-        self.dropout = nn.Dropout(0.1)
+        self.dropout = nn.Dropout(0.5)
 
     def forward(self, x):
         x, _ = self.lstm(x)
@@ -116,6 +116,13 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
     e_accListTrain = []
     e_accListVal = []
 
+    e_precisionListTrain = []
+    e_precisionListVal = []
+    e_recallListTrain = []
+    e_recallListVal = []
+    e_F1ListTrain = []
+    e_F1ListVal = []
+
     for e in range(epochs):
         epoch_loss = 0.0
         correct_predictions = 0
@@ -123,6 +130,8 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
         all_labels = []
         all_predictions = []
         epoch_records = 0
+
+        lossListForEpoch = []
         for batch, (inputs, labels) in enumerate(training_data):
             #update model based on loss
             epoch_records += labels.size(0)
@@ -148,7 +157,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
             print(f'    Batch: {batch} Loss: {test_loss.item():.4f} Accuracy: {accuracy:.2f}%')
 
             epoch_loss += loss.item()
-            e_lossListTrain.append(loss.item())
+            lossListForEpoch.append(loss.item())
 
             # Convert outputs to binary predictions
             preds = outputs.round()  # Assuming sigmoid activation at the output; adjust if necessary
@@ -163,14 +172,21 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
 
         # Calculate epoch accuracy on training data
         epoch_acc = correct_predictions / total_predictions
-        print("EPOCH ACC ON TRAINING: ", epoch_acc)
+        #print("EPOCH ACC ON TRAINING: ", epoch_acc)
         e_accListTrain.append(epoch_acc)
+
+        aveLossForEpoch = np.mean(lossListForEpoch)
+        e_lossListTrain.append(aveLossForEpoch)
 
         #Calculate epoch accuracy on val data
         model.eval()
         test_loss = 0
         correct = 0
         total_validation_records = 0
+
+        valLabels = []
+        valPredictions = []
+        valRunningLoss = []
 
         with torch.no_grad():
             for inputs, labels in testing_data:
@@ -180,72 +196,85 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
                 outputs = outputs.to(torch.float32)
                 labels = labels.to(torch.float32)
                 labels = labels.unsqueeze(1)
-                test_loss += criterion(outputs, labels)
+                l = criterion(outputs, labels)
+                valRunningLoss.append(l.item())
+
+
                 predicted = torch.round(outputs)
                 correct += (predicted == labels).sum().item()
-        test_loss /= len(testing_data.dataset)
-        accuracy = 100.0 * correct / len(testing_data.dataset)
+
+                # Store labels and predictions for F1 score calculation
+                valLabels.extend(labels.view(-1).tolist())
+                valPredictions.extend(predicted.view(-1).tolist())
+        test_loss = np.mean(valRunningLoss)
+        accuracy = correct / len(testing_data.dataset)
         e_accListVal.append(accuracy)
         e_lossListVal.append(test_loss)
+        #print('labels is ', len(valLabels), ' while predictions is ', len(valPredictions),'. they are types ', type(valLabels), type(valPredictions))
 
         # Calculate precision, recall, and F1 score
         precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_predictions, average='binary')
+        precisionV, recallV, f1V, _ = precision_recall_fscore_support(valLabels, valPredictions, average='binary')
         print(f'  Epoch {e} Training - Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f} Records: {epoch_records}')
-        print(f'  Epoch {e} Validation - Loss: {test_loss}, Accuracy: {accuracy}')
+        print(f'  Epoch {e} Validation - Loss: {test_loss}, Accuracy: {accuracy}, Precision: {precisionV:.4f}, Recall: {recallV:.4f}, F1 Score: {f1V:.4f}')
+
+        e_precisionListTrain.append(precision)
+        e_precisionListVal.append(precisionV)
+        e_recallListTrain.append(recall)
+        e_recallListVal.append(recallV)
+        e_F1ListTrain.append(f1)
+        e_F1ListVal.append(f1V)
+
+    test_loss /= len(testing_data.dataset)
+    accuracy = correct / len(testing_data.dataset)
+    print('Validation records: ', total_validation_records)
+    print(f'Validation: Fold {fold} Average loss: {test_loss:.4f} Accuracy: {correct}/{len(testing_data.dataset)} ({accuracy:.2f}%)')
+    # print the size of the testing data
 
     plt.figure(1)
-    print('epoch num is ', epochs)
-    labelName = str(fold) + 'train_acc'
-    plt.plot(e_accListTrain, label=labelName)
+    #print('epoch num is ', epochs)
+    plt.plot(e_accListTrain, label='train_acc')
+    plt.plot(e_accListVal, label='val_acc')
     plt.legend()
+    plt.ylim(0, 1)
     graphName = 'Graphs/' + str(fold) + 'TrainAcc'
-    plt.savefig(graphName)
-    plt.clf()
-
-    labelName = str(fold) + 'val_acc'
-    plt.plot(e_accListVal, label=labelName)
-    plt.legend()
-    graphName = 'Graphs/' + str(fold) + 'ValAcc'
     plt.savefig(graphName)
     plt.clf()
 
     plt.figure(2)
     plt.plot(e_lossListTrain, label='train_loss')
-    plt.legend()
-    graphName = 'Graphs/' + str(fold) + 'TrainLoss'
-    plt.savefig(graphName)
-    plt.clf()
-
-    plt.figure(2)
     plt.plot(e_lossListVal, label='val_loss')
     plt.legend()
-    graphName = 'Graphs/' + str(fold) + 'ValLoss'
+    graphName = 'Graphs/' + str(fold) + 'Loss'
     plt.savefig(graphName)
     plt.clf()
 
-    test_loss /= len(testing_data.dataset)
-    accuracy = 100.0 * correct / len(testing_data.dataset)
-    print('Validation records: ', total_validation_records)
-    print(f'Validation: Fold {fold} Average loss: {test_loss:.4f} Accuracy: {correct}/{len(testing_data.dataset)} ({accuracy:.2f}%)')
-    # print the size of the testing data
+    plt.figure(3)
+    plt.plot(e_recallListTrain, label='Train Recall')
+    plt.plot(e_recallListVal, label='Validation Recall')
+    plt.legend()
+    plt.ylim(0, 1)
+    graphName = 'Graphs/' + str(fold) + 'Recall'
+    plt.savefig(graphName)
+    plt.clf()
 
-    print(" ")
+    plt.figure(4)
+    plt.plot(e_precisionListTrain, label='Train Precision')
+    plt.plot(e_precisionListVal, label='Validation Precision')
+    plt.legend()
+    plt.ylim(0, 1)
+    graphName = 'Graphs/' + str(fold) + 'Precision'
+    plt.savefig(graphName)
+    plt.clf()
 
-"""    model.eval()
-    test_loss = 0
-    correct = 0
-    total_validation_records = 0
-    with torch.no_grad():
-        for inputs, labels in testing_data:
-            total_validation_records += labels.size(0)
-            inputs = normalize(inputs, p=1.0, dim=0)
-            outputs = model(inputs)
-            outputs = outputs.to(torch.float32)
-            labels = labels.to(torch.float32)
-            labels = labels.unsqueeze(1)
-            test_loss += criterion(outputs, labels)
-            predicted = torch.round(outputs)
-            correct += (predicted == labels).sum().item()"""
+    plt.figure(5)
+    plt.plot(e_F1ListTrain, label='Train F1')
+    plt.plot(e_F1ListVal, label='Validation F1')
+    plt.legend()
+    plt.ylim(0, 1)
+    graphName = 'Graphs/' + str(fold) + 'F1'
+    plt.savefig(graphName)
+    plt.clf()
 
 def formatAndFold():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -255,12 +284,12 @@ def formatAndFold():
     labels_train = dataset['Class'].values
 
     # critical hyperparameters
-    epoch = 4
-    ksplits = 3
-    learning_rate = 0.004
+    epoch = 70
+    ksplits = 5
+    learning_rate = 0.001
 
     # Initialize the model and optimizer
-    model = LSTM(1024, 2)
+    model = LSTM(1024, 4)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     loss_fn = torch.nn.BCELoss()
 
