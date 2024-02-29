@@ -76,11 +76,11 @@ class LSTM(nn.Module):
         self.linear = nn.Linear(hide_dim, 1)
         self.sigmoid = nn.Sigmoid()
         self.dropout = nn.Dropout(0.1)
-        self.dropout2 = nn.Dropout(0.3)
+        self.dropout2 = nn.Dropout(0.1)
 
     def forward(self, x):
         x, _ = self.lstm(x)
-        #x = self.dropout(x)
+        x = self.dropout(x)
         #linear is the dense layer here
         x = self.linear(x)
         x = self.dropout2(x)
@@ -299,10 +299,11 @@ def formatAndFold():
     labels_train = dataset['Class'].values
 
     # critical hyperparameters
-    epoch = 400
+    epoch = 300
     ksplits = 5
-    learning_rate = 0.00001
+    #learning_rate = 0.000001
     #learning_rate = 0.0001
+    learning_rate = .00001
     allAveLoss = []
     allAveAcc = []
 
@@ -312,9 +313,10 @@ def formatAndFold():
     #shuffle is currently false, was previously true
     kfold = StratifiedKFold(n_splits=ksplits, shuffle=False)
     for train_index, test_index in kfold.split(smiles_train, labels_train):
-        model = LSTM(64, 2)
+        #changed from 64
+        model = LSTM(32, 2)
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-        scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.6, total_iters=75)
+        scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.6, total_iters=300)
         loss_fn = torch.nn.BCELoss()
 
         fold = fold + 1
