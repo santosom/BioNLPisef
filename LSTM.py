@@ -71,17 +71,19 @@ class LSTM(nn.Module):
     def __init__(self, hide_dim, n_layers):
         self.hide_dim = hide_dim
         super(LSTM, self).__init__()
-        self.lstm = nn.LSTM(input_size=1024, hidden_size=hide_dim, num_layers=n_layers, batch_first=True)
+        self.lstm = nn.LSTM(input_size=1024, hidden_size=hide_dim, num_layers=n_layers, dropout=.3, batch_first=True)
         self.embedding = nn.Embedding(LEN_VOCAB, 300)
         self.linear = nn.Linear(hide_dim, 1)
         self.sigmoid = nn.Sigmoid()
-        self.dropout = nn.Dropout(0.3)
+        self.dropout = nn.Dropout(0.1)
+        self.dropout2 = nn.Dropout(0.3)
 
     def forward(self, x):
         x, _ = self.lstm(x)
+        #x = self.dropout(x)
         #linear is the dense layer here
         x = self.linear(x)
-        x = self.dropout(x)
+        x = self.dropout2(x)
         return torch.sigmoid(x)
 
 """def accuracy(predicted, actual):
@@ -140,7 +142,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
             model.train()
             optimizer.zero_grad()
 
-            inputs = normalize(inputs, p=2.0, dim=0)
+            #inputs = normalize(inputs, p=2.0, dim=0)
             outputs = model(inputs)
             outputs = outputs.to(torch.float32)
             labels = labels.to(torch.float32)
@@ -198,7 +200,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
         with torch.no_grad():
             for inputs, labels in testing_data:
                 total_validation_records += labels.size(0)
-                inputs = normalize(inputs, p=2.0, dim=0)
+                #inputs = normalize(inputs, p=2.0, dim=0)
                 outputs = model(inputs)
                 outputs = outputs.to(torch.float32)
                 labels = labels.to(torch.float32)
@@ -222,8 +224,12 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
         # Calculate precision, recall, and F1 score
         precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_predictions, average='binary')
         precisionV, recallV, f1V, _ = precision_recall_fscore_support(valLabels, valPredictions, average='binary')
-        print(f'  Epoch {e} Training - Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f} Records: {epoch_records}')
-        print(f'  Epoch {e} Validation - Loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Precision: {precisionV:.4f}, Recall: {recallV:.4f}, F1 Score: {f1V:.4f}')
+        #bc i'm getting nauesous
+        if (e%10==0):
+            print(
+                f'  Epoch {e} Training - Loss: {aveLossForEpoch:.4f}, Accuracy: {epoch_acc:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f} Records: {epoch_records}')
+            print(
+                f'             Epoch {e} Validation - Loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Precision: {precisionV:.4f}, Recall: {recallV:.4f}, F1 Score: {f1V:.4f}')
 
         e_precisionListTrain.append(precision)
         e_precisionListVal.append(precisionV)
@@ -283,6 +289,8 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
     plt.savefig(graphName)
     plt.clf()
 
+    return test_loss, (correct/len(testing_data.dataset))
+
 def formatAndFold():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
@@ -291,19 +299,24 @@ def formatAndFold():
     labels_train = dataset['Class'].values
 
     # critical hyperparameters
-    epoch = 50
-    ksplits = 4
-    learning_rate = 0.0045
+    epoch = 400
+    ksplits = 5
+    learning_rate = 0.00001
+    #learning_rate = 0.0001
+    allAveLoss = []
+    allAveAcc = []
 
     # Initialize the model and optimizer
-    model = LSTM(1024, 2)
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.3, total_iters=10)
-    loss_fn = torch.nn.BCELoss()
 
     fold = 0
-    kfold = StratifiedKFold(n_splits=ksplits, shuffle=True)
+    #shuffle is currently false, was previously true
+    kfold = StratifiedKFold(n_splits=ksplits, shuffle=False)
     for train_index, test_index in kfold.split(smiles_train, labels_train):
+        model = LSTM(64, 2)
+        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.6, total_iters=75)
+        loss_fn = torch.nn.BCELoss()
+
         fold = fold + 1
         training_data = biodegradeDataset(smiles_train[train_index], labels_train[train_index])
         testing_data = biodegradeDataset(smiles_train[test_index], labels_train[test_index])
@@ -319,6 +332,15 @@ def formatAndFold():
         )
 
         # change the number of epoch back to 20
-        trainLoop(model, epoch, train_loader, test_loader, optimizer, loss_fn, fold, scheduler)
+        loopLoss, loopAcc = trainLoop(model, epoch, train_loader, test_loader, optimizer, loss_fn, fold, scheduler)
+        allAveLoss.append(loopLoss)
+        allAveAcc.append(loopAcc)
 
+    meanLoss = np.mean(allAveLoss)
+    meanAcc = np.mean(allAveAcc)
+    SDLoss = np.std(allAveLoss)
+    SDAcc = np.std(allAveAcc)
+
+    print(" ")
+    print(f'MEAN LOSS FOR ALL FOLDS IS {meanLoss}, SD {SDLoss}. MEAN ACCURACY IS {meanAcc}, SD {SDAcc}.')
 formatAndFold()
