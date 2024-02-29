@@ -75,8 +75,8 @@ class LSTM(nn.Module):
         self.embedding = nn.Embedding(LEN_VOCAB, 300)
         self.linear = nn.Linear(hide_dim, 1)
         self.sigmoid = nn.Sigmoid()
-        self.dropout = nn.Dropout(0.1)
-        self.dropout2 = nn.Dropout(0.1)
+        self.dropout = nn.Dropout(0.3)
+        self.dropout2 = nn.Dropout(0.3)
 
     def forward(self, x):
         x, _ = self.lstm(x)
@@ -231,12 +231,13 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
             print(
                 f'             Epoch {e} Validation - Loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Precision: {precisionV:.4f}, Recall: {recallV:.4f}, F1 Score: {f1V:.4f}')
 
-        e_precisionListTrain.append(precision)
-        e_precisionListVal.append(precisionV)
-        e_recallListTrain.append(recall)
-        e_recallListVal.append(recallV)
-        e_F1ListTrain.append(f1)
-        e_F1ListVal.append(f1V)
+        if (e > (epochs-10)):
+            e_precisionListTrain.append(precision)
+            e_precisionListVal.append(precisionV)
+            e_recallListTrain.append(recall)
+            e_recallListVal.append(recallV)
+            e_F1ListTrain.append(f1)
+            e_F1ListVal.append(f1V)
 
     test_loss /= len(testing_data.dataset)
     accuracy = correct / len(testing_data.dataset)
@@ -299,11 +300,11 @@ def formatAndFold():
     labels_train = dataset['Class'].values
 
     # critical hyperparameters
-    epoch = 300
-    ksplits = 5
+    epoch = 150
+    ksplits = 2
     #learning_rate = 0.000001
     #learning_rate = 0.0001
-    learning_rate = .00001
+    learning_rate = .00005
     allAveLoss = []
     allAveAcc = []
 
@@ -315,8 +316,9 @@ def formatAndFold():
     for train_index, test_index in kfold.split(smiles_train, labels_train):
         #changed from 64
         model = LSTM(32, 2)
+        #change to Adam
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-        scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.6, total_iters=300)
+        scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.8, total_iters=300)
         loss_fn = torch.nn.BCELoss()
 
         fold = fold + 1
