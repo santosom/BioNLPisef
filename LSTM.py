@@ -71,13 +71,12 @@ class LSTM(nn.Module):
     def __init__(self, hide_dim, n_layers):
         self.hide_dim = hide_dim
         super(LSTM, self).__init__()
-        self.lstm = nn.LSTM(input_size=1024, hidden_size=hide_dim, num_layers=n_layers, dropout=.3, batch_first=True)
+        self.lstm = nn.LSTM(input_size=1024, hidden_size=hide_dim, num_layers=n_layers, dropout=.4, batch_first=True)
         self.embedding = nn.Embedding(LEN_VOCAB, 300)
         self.linear = nn.Linear(hide_dim, 1)
         self.sigmoid = nn.Sigmoid()
         self.dropout = nn.Dropout(0.3)
-        self.dropout2 = nn.Dropout(0.3)
-
+        self.dropout2 = nn.Dropout(0.4)
     def forward(self, x):
         x, _ = self.lstm(x)
         x = self.dropout(x)
@@ -142,7 +141,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
             model.train()
             optimizer.zero_grad()
 
-            #inputs = normalize(inputs, p=2.0, dim=0)
+            inputs = normalize(inputs, p=2.0, dim=0)
             outputs = model(inputs)
             outputs = outputs.to(torch.float32)
             labels = labels.to(torch.float32)
@@ -177,7 +176,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
         before_lr = optimizer.param_groups[0]["lr"]
         scheduler.step()
         after_lr = optimizer.param_groups[0]["lr"]
-        print("  Epoch %d: SGD lr %.4f -> %.4f" % (e, before_lr, after_lr))
+        print("  Epoch %d: SGD lr %.8f -> %.8f" % (e, before_lr, after_lr))
 
         # Calculate epoch accuracy on training data
         epoch_acc = correct_predictions / total_predictions
@@ -200,7 +199,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
         with torch.no_grad():
             for inputs, labels in testing_data:
                 total_validation_records += labels.size(0)
-                #inputs = normalize(inputs, p=2.0, dim=0)
+                inputs = normalize(inputs, p=2.0, dim=0)
                 outputs = model(inputs)
                 outputs = outputs.to(torch.float32)
                 labels = labels.to(torch.float32)
@@ -300,11 +299,12 @@ def formatAndFold():
     labels_train = dataset['Class'].values
 
     # critical hyperparameters
-    epoch = 150
-    ksplits = 2
+    epoch = 300
+    ksplits = 3
     #learning_rate = 0.000001
     #learning_rate = 0.0001
-    learning_rate = .00005
+    learning_rate = 0.0001
+    learning_rate = 0.00008
     allAveLoss = []
     allAveAcc = []
 
@@ -312,13 +312,13 @@ def formatAndFold():
 
     fold = 0
     #shuffle is currently false, was previously true
-    kfold = StratifiedKFold(n_splits=ksplits, shuffle=False)
+    kfold = StratifiedKFold(n_splits=ksplits, shuffle=True)
     for train_index, test_index in kfold.split(smiles_train, labels_train):
         #changed from 64
-        model = LSTM(32, 2)
+        model = LSTM(32, 3)
         #change to Adam
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-        scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.8, total_iters=300)
+        scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=.8, total_iters=300)
         loss_fn = torch.nn.BCELoss()
 
         fold = fold + 1

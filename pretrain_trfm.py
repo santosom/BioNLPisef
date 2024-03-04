@@ -88,7 +88,7 @@ class TrfmSeq2seq(nn.Module):
         if batch_size <= 100:
             return self._encode(src)
         else:  # Batch is too large to load
-            print('WE ARE ENCODING. LETS GOOOOO. Currently running {:d} molecules.'.format(batch_size))
+            print('ENCODING. Currently running {:d} molecules.'.format(batch_size))
             st, ed = 0, 100
             out = self._encode(src[:, st:ed])  # (B,4H)
             while ed < batch_size:
