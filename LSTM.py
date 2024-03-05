@@ -305,8 +305,8 @@ def formatAndFold():
     ksplits = 3
     #learning_rate = 0.000001
     #learning_rate = 0.0001
-    learning_rate = .000085
-    l2_weight_decay = 0.0007
+    learning_rate = .0001
+    l2_weight_decay = 0.00085
     allAveLoss = []
     allAveAcc = []
 
@@ -314,7 +314,7 @@ def formatAndFold():
 
     fold = 0
     #shuffle is currently false, was previously true
-    kfold = StratifiedKFold(n_splits=ksplits, shuffle=False)
+    kfold = StratifiedKFold(n_splits=ksplits, shuffle=True)
     for train_index, test_index in kfold.split(smiles_train, labels_train):
         #changed from 64
         model = LSTM(64, 3)
