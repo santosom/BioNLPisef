@@ -5,8 +5,8 @@ import pandas as pd
 
 
 def prepareNewData():
-    biodegradable_smiles = pd.read_excel('Data/bioDataset.xlsx', sheet_name="Train+Test")
-    test_bsms = pd.read_excel('Data/bioDataset.xlsx', sheet_name="External validation")
+    biodegradable_smiles = pd.read_excel('Data/bioDataset2.xlsx', sheet_name="Train+Test")
+    test_bsms = pd.read_excel('Data/bioDataset2.xlsx', sheet_name="External validation")
 
     dataset_len = len(biodegradable_smiles)
     smiles = biodegradable_smiles['Smiles'].values
