@@ -1,4 +1,4 @@
 ,Smiles,processed_smiles,Class,Status
-0,CCCCCCCCCCC,C C C C C C C C C C C,1,Train
-1,CCC1CO1,C C C 1 C O 1,1,Train
-2,CCOCCOCCOCCO,C C O C C O C C O C C O,1,Train
+0,ClCc1ccc(Cl)c(Cl)c1,Cl C c 1 c c c ( Cl ) c ( Cl ) c 1,0,Train
+1,C1CCC(CC1)N=C=NC2CCCCC2,C 1 C C C ( C C 1 ) N = C = N C 2 C C C C C 2,0,Train
+2,O=C1OC(=O)C2CC=CCC12,O = C 1 O C ( = O ) C 2 C C = C C C 1 2,0,Train
