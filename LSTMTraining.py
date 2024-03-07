@@ -22,7 +22,7 @@ from dataset import biodegradeDataset
 from torch.optim import adam
 from torch.nn.functional import normalize
 
-print('hello hello?')
+print('LSTMTraining START')
 
 pad_index = 0
 unk_index = 1
@@ -248,13 +248,16 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
                 print(last5ValAcc)
 
             for v in last5ValAcc:
-                if (v < .86):
+                if (v < .87):
                     exitloop = False
                     break
 
             if exitloop is True:
                 print('Plateu @ high point, breaking')
                 break
+
+    #save model weights to /Models
+    torch.save(model.state_dict(), 'Models/trainedRB3.pkl')
 
     test_loss /= len(testing_data.dataset)
     accuracy = correct / len(testing_data.dataset)
@@ -321,9 +324,6 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
     graphName = 'Graphs/' + str(fold) + 'F1'
     plt.savefig(graphName)
     plt.clf()
-
-    #save model weights to /Models
-    torch.save(model.state_dict(), 'Models/trainedRB2')
 
     return test_loss, (correct/len(testing_data.dataset))
 
@@ -425,6 +425,72 @@ def formatAndTrain():
     loopLoss, loopAcc = trainLoop(model, epoch, train_loader, test_loader, optimizer, loss_fn, 0, scheduler)
 
     print(f'LOSS: {loopLoss} ACC: {loopAcc}')
+def itsevaluation():
+    d = pd.read_csv('Data/RB_Final.csv')
+    m = LSTM(124, 3)
+    m.load_state_dict(torch.load('Models/trainedRB3.pkl', map_location=torch.device('cpu')), strict=False)
+    print('len dataset currently is ', d)
+    smiles_split = [split(sm) for sm in d['processed_smiles'].values]
+    smilesID, _ = get_array(smiles_split)
+    smiles = trfm.encode(torch.t(smilesID))
+    labels = d['Class'].values
+
+    train_dataset = pd.read_csv('Data/RB_train.csv')
+    smiles_split_train = [split(sm) for sm in train_dataset['processed_smiles'].values]
+    smilesID_train, _ = get_array(smiles_split_train)
+    smiles_train = trfm.encode(torch.t(smilesID_train))
+    labels_train = train_dataset['Class'].values
+
+    tdata = biodegradeDataset(smiles, labels)
+    # batch size defaults to 1
+    tloader = DataLoader(
+        dataset=tdata,
+        batch_size=1
+    )
+
+    training_data = biodegradeDataset(smiles_train, labels_train)
+    train_loader = DataLoader(
+        dataset=training_data
+    )
+
+    m.eval()
+    bceLoss = torch.nn.BCELoss()
+
+    all_labels = []
+    all_predictions = []
+    runningLoss = []
+    test_loss = 0
+    correct = 0
+    total_validation_records = 0
+
+    with torch.no_grad():
+        for i, (inputs, labels) in enumerate(train_loader):
+            i += 1
+            total_validation_records += labels.size(0)
+            outputs = m(inputs)
+            outputs = outputs.to(torch.float64)
+            labels = labels.to(torch.float64)
+            labels = labels.unsqueeze(1)
+            loss = bceLoss(outputs, labels)
+            runningLoss.append(loss.item())
+
+            predicted = torch.round(outputs)
+            correct += (predicted == labels).sum().item()
+
+            all_labels.extend(labels.view(-1).tolist())
+            all_predictions.extend(predicted.view(-1).tolist())
+
+            if i % 10 == 0:
+                print(i, " loss is ", np.mean(runningLoss))
+                print(i, " accuracy is ", correct / i)
+                print(" ")
+    test_loss = np.mean(runningLoss)
+    accuracy = correct / len(tdata)
+    precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_predictions, average='binary')
+
+    print(
+        f'FINAL EVALUATION: LOSS: {test_loss}, ACCURACY: {accuracy}, PRECISION: {precision}, RECALL: {recall}, F1: {f1}')
 
 #formatAndFold()
-formatAndTrain()
+#formatAndTrain()
+itsevaluation()

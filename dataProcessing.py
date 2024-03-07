@@ -76,6 +76,54 @@ def prepareNewData():
     print(validation_dataset['Class'].value_counts(normalize=True))
     print('training size is ', len(training_dataset), ' and val size is ', len(validation_dataset))
 
+def prepareFinalData():
+    print("preparing final data")
+    test_bsms = pd.read_excel('Data/bioDataset2.xlsx', sheet_name="External validation")
+
+    dataset_len = len(test_bsms)
+    smiles = test_bsms['Smiles'].values
+    to_drop = []
+    for i, sm in enumerate(smiles):
+        if len(sm) > 100:
+            to_drop.append(i)
+
+    dropped_dataset = test_bsms.drop(to_drop)
+    redunantcol = []
+    for col in test_bsms.columns:
+        if not ((col == 'Smiles') or (col == 'class')):
+            redunantcol.append(i)
+    print('dropping ', len(redunantcol))
+    dropped_dataset = dropped_dataset.drop(dropped_dataset.columns[4:45], axis=1)
+    dropped_dataset = dropped_dataset.drop('CAS-RN', axis=1)
+
+    # process smiles to get it to be more like the pretrained dataset
+    smiles = dropped_dataset['Smiles'].values
+    pro_sms = []
+    for sm in smiles:
+        sm = ' '.join(list(sm))
+        before = ['C l -', 'C l', 'O -', 'N +', 'n +', 'B r -', 'B r', 'N a +', 'N a', 'I -', 'S i']
+        after = ['Cl-', 'Cl', 'O-', 'N+', 'n+', 'Br-', 'Br', 'Na+', 'Na', 'I-', 'Si']
+        for b, a in zip(before, after):
+            sm = sm.replace(b, a)
+        pro_sms.append(sm)
+
+    # replace RB with 1, NRB with 0. Classes now have numbers
+    _class = dropped_dataset['class']
+    numberedLabels = []
+    for label in _class:
+        if (label == 'RB'):
+            numberedLabels.append(1)
+        else:
+            numberedLabels.append(0)
+    dropped_dataset = dropped_dataset.drop('class', axis=1)
+    dropped_dataset.insert(1, 'Class', numberedLabels, True)
+
+    dropped_dataset.insert(1, 'processed_smiles', pro_sms, True)
+    dropped_dataset.to_csv('Data/RB_Final.csv')
+    print(dropped_dataset.head())
+    print(dropped_dataset['Class'].value_counts(normalize=True))
+
+
 
 class customSmilesDataset(Dataset):
     def __init__(self, rootFile, isTrain):
@@ -86,10 +134,12 @@ class customSmilesDataset(Dataset):
 
 # please just let me upload to github
 # This is only the training+validation dataset
-
-
-if __name__ == '__main__':
-    prepareNewData()
+#prepareFinalData()
+val = pd.read_csv('Data/RB_val.csv')
+print('Class distribution for val:')
+print(val['Class'].value_counts(normalize=True))
+"""if __name__ == '__main__':
+    prepareNewData()"""
 
 # need to put this in a tensor. before that, need to attach the correct labels for biodegradable and not
 # will also need to convert smiles into something useable....
