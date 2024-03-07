@@ -325,6 +325,9 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
     plt.savefig(graphName)
     plt.clf()
 
+    ## maybe save the model here??? doFinalEval runs better here
+    doFinalEval(model)
+
     return test_loss, (correct/len(testing_data.dataset))
 
 def formatAndFold():
@@ -425,6 +428,68 @@ def formatAndTrain():
     loopLoss, loopAcc = trainLoop(model, epoch, train_loader, test_loader, optimizer, loss_fn, 0, scheduler)
 
     print(f'LOSS: {loopLoss} ACC: {loopAcc}')
+
+
+def doFinalEval(model):
+    dataset = pd.read_csv('Data/RB_Final.csv')
+    print('len dataset currently is ', dataset)
+    smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
+    smilesID, _ = get_array(smiles_split)
+    smiles = trfm.encode(torch.t(smilesID))
+    labels = dataset['Class'].values
+
+    testing_data = biodegradeDataset(smiles, labels)
+    #batch size defaults to 1
+    test_loader = DataLoader(
+        dataset=testing_data,
+        batch_size=1
+    )
+
+    model.eval()
+    loss_fn = torch.nn.BCELoss()
+
+    all_labels = []
+    all_predictions = []
+    runningLoss = []
+    test_loss = 0
+    correct = 0
+    total_validation_records = 0
+
+    with torch.no_grad():
+        for i, (inputs, labels) in enumerate(test_loader):
+            i += 1
+            print('-------------------', i, '-------------------')
+            total_validation_records += labels.size(0)
+            # print('inputs are ', inputs)
+            # print('labels are ', labels)
+            outputs = model(inputs)
+            # print('outputs are ', outputs)
+            outputs = model(inputs)
+            # print(outputs)
+            outputs = outputs.to(torch.float64)
+            labels = labels.to(torch.float64)
+            labels = labels.unsqueeze(1)
+            loss = loss_fn(outputs, labels)
+            runningLoss.append(loss.item())
+
+            predicted = torch.round(outputs)
+            # print('predicted is ', predicted, ' labels is ', labels)
+            correct += (predicted == labels).sum().item()
+
+            all_labels.extend(labels.view(-1).tolist())
+            all_predictions.extend(predicted.view(-1).tolist())
+
+            if i % 10 == 0:
+                print(i, " loss is ", np.mean(runningLoss))
+                print(i, " accuracy is ", correct / i)
+                print(" ")
+    test_loss = np.mean(runningLoss)
+    accuracy = correct / len(testing_data)
+    precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_predictions, average='binary')
+
+    print(f'FINAL EVALUATION: LOSS: {test_loss}, ACCURACY: {accuracy}, PRECISION: {precision}, RECALL: {recall}, F1: {f1}')
+
+
 def itsevaluation():
     d = pd.read_csv('Data/RB_Final.csv')
     m = LSTM(124, 3)
@@ -492,5 +557,5 @@ def itsevaluation():
         f'FINAL EVALUATION: LOSS: {test_loss}, ACCURACY: {accuracy}, PRECISION: {precision}, RECALL: {recall}, F1: {f1}')
 
 #formatAndFold()
-#formatAndTrain()
-itsevaluation()
+formatAndTrain()
+# itsevaluation()
