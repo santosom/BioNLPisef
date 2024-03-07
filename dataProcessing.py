@@ -48,7 +48,6 @@ def prepareNewData():
 
     # NOTE: might have to return to this and create an empty/random array for chembl_id if training goes poorly the
     # first time, because that's something the original dataset has that we don't
-    print('processed smiles len: ', len(pro_sms))
     dropped_dataset.insert(1, 'processed_smiles', pro_sms, True)
 
     # don't split into training/validation just make a big csv
@@ -58,7 +57,7 @@ def prepareNewData():
     baby_dataset.to_csv('Data/baby_dataset.csv')
 
 
-"""    training_index = dropped_dataset.index[dropped_dataset['Status'] == 'Train'].tolist()
+    training_index = dropped_dataset.index[dropped_dataset['Status'] == 'Train'].tolist()
     validation_index = dropped_dataset.index[dropped_dataset['Status'] == 'Test'].tolist()
 
     validation_dataset = dropped_dataset.drop(training_index)
@@ -66,13 +65,16 @@ def prepareNewData():
 
     training_dataset = training_dataset.drop('Status', axis=1)
     validation_dataset = validation_dataset.drop('Status', axis=1)
-    validation_dataset.to_csv('Data/RB_train.csv')
-    training_dataset.to_csv('Data/RB_val.csv')
+    validation_dataset.to_csv('Data/RB_val.csv')
+    training_dataset.to_csv('Data/RB_train.csv')
 
+    print('TRAINING')
     print(training_dataset.head())
     print(training_dataset['Class'].value_counts(normalize=True))
+    print('VALIDATION')
     print(validation_dataset.head())
-    print(validation_dataset['Class'].value_counts(normalize=True))"""
+    print(validation_dataset['Class'].value_counts(normalize=True))
+    print('training size is ', len(training_dataset), ' and val size is ', len(validation_dataset))
 
 
 class customSmilesDataset(Dataset):

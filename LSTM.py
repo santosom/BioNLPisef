@@ -29,7 +29,8 @@ unk_index = 1
 eos_index = 2
 sos_index = 3
 mask_index = 4
-batch_size = 64
+#changed from 64
+batch_size = 84
 
 rates = 2**np.arange(7)/80
 VOCAB = WordVocab.load_vocab('data/vocab.pkl')
@@ -72,12 +73,12 @@ class LSTM(nn.Module):
     def __init__(self, hide_dim, n_layers):
         self.hide_dim = hide_dim
         super(LSTM, self).__init__()
-        self.lstm = nn.LSTM(input_size=1024, hidden_size=hide_dim, num_layers=n_layers, dropout=.4, batch_first=True)
+        self.lstm = nn.LSTM(input_size=1024, hidden_size=hide_dim, num_layers=n_layers, dropout=.35, batch_first=True)
         self.embedding = nn.Embedding(LEN_VOCAB, 300)
         self.linear = nn.Linear(hide_dim, 1)
         self.sigmoid = nn.Sigmoid()
-        self.dropout = nn.Dropout(0.3)
-        self.dropout2 = nn.Dropout(0.3)
+        self.dropout = nn.Dropout(0.5)
+        self.dropout2 = nn.Dropout(0.4)
 
     def forward(self, x):
         x, _ = self.lstm(x)
@@ -226,19 +227,34 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
         precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_predictions, average='binary')
         precisionV, recallV, f1V, _ = precision_recall_fscore_support(valLabels, valPredictions, average='binary')
         #bc i'm getting nauesous
-        if (e%10==0):
+        if (e%1==0):
             print(
                 f'  Epoch {e} Training - Loss: {aveLossForEpoch:.4f}, Accuracy: {epoch_acc:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f} Records: {epoch_records}')
             print(
                 f'             Epoch {e} Validation - Loss: {test_loss:.4f}, Accuracy: {accuracy:.4f}, Precision: {precisionV:.4f}, Recall: {recallV:.4f}, F1 Score: {f1V:.4f}')
 
-        if (e > (epochs-10)):
-            e_precisionListTrain.append(precision)
-            e_precisionListVal.append(precisionV)
-            e_recallListTrain.append(recall)
-            e_recallListVal.append(recallV)
-            e_F1ListTrain.append(f1)
-            e_F1ListVal.append(f1V)
+        e_precisionListTrain.append(precision)
+        e_precisionListVal.append(precisionV)
+        e_recallListTrain.append(recall)
+        e_recallListVal.append(recallV)
+        e_F1ListTrain.append(f1)
+        e_F1ListVal.append(f1V)
+
+        # break early for consistently good scores
+        if e > 10:
+            exitloop = True
+            last5ValAcc = e_accListVal[(len(e_accListVal) - 10):]
+            if e%5==0:
+                print(last5ValAcc)
+
+            for v in last5ValAcc:
+                if (v < .86):
+                    exitloop = False
+                    break
+
+            if exitloop is True:
+                print('Plateu @ high point, breaking')
+                break
 
     test_loss /= len(testing_data.dataset)
     accuracy = correct / len(testing_data.dataset)
@@ -248,8 +264,11 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
 
     plt.figure(1)
     #print('epoch num is ', epochs)
-    plt.plot(e_accListTrain, label='train_acc')
-    plt.plot(e_accListVal, label='val_acc')
+    plt.plot(e_accListTrain, label='Training Set Accuracy')
+    plt.plot(e_accListVal, label='Validation Set Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Model Accuracy of Classification')
+    plt.title('Accuracy')
     plt.legend()
     plt.ylim(0, 1)
     graphName = 'Graphs/' + str(fold) + 'TrainAcc'
@@ -257,16 +276,22 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
     plt.clf()
 
     plt.figure(2)
-    plt.plot(e_lossListTrain, label='train_loss')
-    plt.plot(e_lossListVal, label='val_loss')
+    plt.plot(e_lossListTrain, label='Training Set Loss')
+    plt.plot(e_lossListVal, label='Validation Set Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Binary Cross Entropy Loss')
+    plt.title('Loss')
     plt.legend()
     graphName = 'Graphs/' + str(fold) + 'Loss'
     plt.savefig(graphName)
     plt.clf()
 
     plt.figure(3)
-    plt.plot(e_recallListTrain, label='Train Recall')
-    plt.plot(e_recallListVal, label='Validation Recall')
+    plt.plot(e_recallListTrain, label='Training Set Recall')
+    plt.plot(e_recallListVal, label='Validation Set Recall')
+    plt.xlabel('Epochs')
+    plt.ylabel('Model Recall')
+    plt.title('Recall')
     plt.legend()
     plt.ylim(0, 1)
     graphName = 'Graphs/' + str(fold) + 'Recall'
@@ -274,8 +299,11 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
     plt.clf()
 
     plt.figure(4)
-    plt.plot(e_precisionListTrain, label='Train Precision')
-    plt.plot(e_precisionListVal, label='Validation Precision')
+    plt.plot(e_precisionListTrain, label='Training Set Precision')
+    plt.plot(e_precisionListVal, label='Validation Set Precision')
+    plt.title('Precision')
+    plt.xlabel('Epochs')
+    plt.ylabel('Model Precision')
     plt.legend()
     plt.ylim(0, 1)
     graphName = 'Graphs/' + str(fold) + 'Precision'
@@ -283,13 +311,19 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
     plt.clf()
 
     plt.figure(5)
-    plt.plot(e_F1ListTrain, label='Train F1')
-    plt.plot(e_F1ListVal, label='Validation F1')
+    plt.plot(e_F1ListTrain, label='Training Set F1')
+    plt.plot(e_F1ListVal, label='Validation Set F1')
     plt.legend()
+    plt.title('F1')
+    plt.xlabel('Epochs')
+    plt.ylabel('Model F1-Score')
     plt.ylim(0, 1)
     graphName = 'Graphs/' + str(fold) + 'F1'
     plt.savefig(graphName)
     plt.clf()
+
+    #save model weights to /Models
+    torch.save(model.state_dict(), 'Models/trainedRB2')
 
     return test_loss, (correct/len(testing_data.dataset))
 
@@ -349,4 +383,48 @@ def formatAndFold():
 
     print(" ")
     print(f'MEAN LOSS FOR ALL FOLDS IS {meanLoss}, SD {SDLoss}. MEAN ACCURACY IS {meanAcc}, SD {SDAcc}.')
-formatAndFold()
+
+#Same as above, just without k-fold
+def formatAndTrain():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    train_dataset = pd.read_csv('Data/RB_train.csv')
+    val_dataset = pd.read_csv('Data/RB_val.csv')
+
+    smiles_split_train = [split(sm) for sm in train_dataset['processed_smiles'].values]
+    smilesID_train, _ = get_array(smiles_split_train)
+    smiles_train = trfm.encode(torch.t(smilesID_train))
+    labels_train = train_dataset['Class'].values
+
+    smiles_split_val = [split(sm) for sm in val_dataset['processed_smiles'].values]
+    smilesID_val, _ = get_array(smiles_split_val)
+    smiles_val = trfm.encode(torch.t(smilesID_val))
+    labels_val = val_dataset['Class'].values
+
+    epoch = 75
+    #learning_rate = 0.000001
+    #learning_rate = 0.0001
+    learning_rate = .000089
+    l2_weight_decay = 0.001
+
+    model = LSTM(124, 3)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=l2_weight_decay)
+    scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.8, total_iters=300)
+    loss_fn = torch.nn.BCELoss()
+
+    training_data = biodegradeDataset(smiles_train, labels_train)
+    testing_data = biodegradeDataset(smiles_val, labels_val)
+    train_loader = DataLoader(
+        dataset=training_data,
+        batch_size=batch_size
+    )
+    test_loader = DataLoader(
+        dataset=testing_data,
+        batch_size=batch_size
+    )
+
+    loopLoss, loopAcc = trainLoop(model, epoch, train_loader, test_loader, optimizer, loss_fn, 0, scheduler)
+
+    print(f'LOSS: {loopLoss} ACC: {loopAcc}')
+
+#formatAndFold()
+formatAndTrain()
