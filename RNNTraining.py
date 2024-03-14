@@ -1,28 +1,20 @@
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
 import matplotlib.pyplot as plt
-import rdkit
-from rdkit import Chem
-from rdkit.Chem import Draw, MolFromSmiles, MolToSmiles
 
-from sklearn.metrics import roc_auc_score, precision_recall_fscore_support
+from sklearn.metrics import precision_recall_fscore_support
 from torch import optim
 from torch.optim import lr_scheduler
-from tqdm import tqdm
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
-from torch.utils.data import Dataset
 from Scripts.build_vocab import WordVocab
 from utils import split
-from pretrain_trfm import TrfmSeq2seq, evaluate
-from sklearn.model_selection import train_test_split, StratifiedKFold, StratifiedShuffleSplit, KFold
+from pretrain_trfm import TrfmSeq2seq
+from RNNdef import RNN
+from sklearn.model_selection import StratifiedKFold, KFold
 from dataset import biodegradeDataset
 from torch.optim import adam
 from torch.nn.functional import normalize
-
-print('LSTMTraining START')
 
 pad_index = 0
 unk_index = 1
@@ -63,41 +55,12 @@ def get_array(smiles):
     return torch.tensor(x_id), torch.tensor(x_seg)
 
 
-class LSTM(nn.Module):
-    def __init__(self, hide_dim, n_layers):
-        self.hide_dim = hide_dim
-        super(LSTM, self).__init__()
-        self.lstm = nn.LSTM(input_size=1024, hidden_size=hide_dim, num_layers=n_layers, dropout=.35, batch_first=True)
-        self.embedding = nn.Embedding(LEN_VOCAB, 300)
-        self.linear = nn.Linear(hide_dim, 1)
-        self.sigmoid = nn.Sigmoid()
-        self.dropout = nn.Dropout(0.5)
-        self.dropout2 = nn.Dropout(0.4)
-
-    def forward(self, x):
-        x, _ = self.lstm(x)
-        x = self.dropout(x)
-        #linear is the dense layer here
-        x = self.linear(x)
-        x = self.dropout2(x)
-        return torch.sigmoid(x)
-def evalTensor(t):
-    torch.set_printoptions(threshold=10000)
-    print(t)
-    for val in t:
-        if (val > 1) or (val < 0):
-            print('VALUE IN TENSOR OUT OF BOUNDS. VALUE IS ', val)
-
-
 def calculateAccuracy(outputs, labels):
     # _, predicted = torch.max(outputs, dim=1)
     predicted = outputs
     # use sigmoid to convert to binary
     predicted = torch.round(predicted)
     correct = (predicted == labels).sum().item()
-    # debug the comparison
-    # print(f'Predicted: {predicted}')
-    # print(f'Labels: {labels}')
     return 100 * (correct / len(labels))
 
 def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, fold, scheduler):
@@ -257,7 +220,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
     plt.title('Accuracy')
     plt.legend()
     plt.ylim(0, 1)
-    graphName = 'Graphs/' + str(fold) + 'TrainAcc'
+    graphName = 'RNNGraphs/' + str(fold) + 'TrainAcc'
     plt.savefig(graphName)
     plt.clf()
 
@@ -268,7 +231,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
     plt.ylabel('Binary Cross Entropy Loss')
     plt.title('Loss')
     plt.legend()
-    graphName = 'Graphs/' + str(fold) + 'Loss'
+    graphName = 'RNNGraphs/' + str(fold) + 'Loss'
     plt.savefig(graphName)
     plt.clf()
 
@@ -280,7 +243,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
     plt.title('Recall')
     plt.legend()
     plt.ylim(0, 1)
-    graphName = 'Graphs/' + str(fold) + 'Recall'
+    graphName = 'RNNGraphs/' + str(fold) + 'Recall'
     plt.savefig(graphName)
     plt.clf()
 
@@ -292,7 +255,7 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
     plt.ylabel('Model Precision')
     plt.legend()
     plt.ylim(0, 1)
-    graphName = 'Graphs/' + str(fold) + 'Precision'
+    graphName = 'RNNGraphs/' + str(fold) + 'Precision'
     plt.savefig(graphName)
     plt.clf()
 
@@ -304,14 +267,13 @@ def trainLoop(model, epochs, training_data, testing_data, optimizer, criterion, 
     plt.xlabel('Epochs')
     plt.ylabel('Model F1-Score')
     plt.ylim(0, 1)
-    graphName = 'Graphs/' + str(fold) + 'F1'
+    graphName = 'RNNGraphs/' + str(fold) + 'F1'
     plt.savefig(graphName)
     plt.clf()
 
-    ## maybe save the model here??? doFinalEval runs better here
     #save model weights to /Models
-    torch.save(model.state_dict(), 'Models/trainedRB3.pkl')
-    doFinalEval(model)
+    torch.save(model.state_dict(), 'Models/trainedRNN.pkl')
+    #Eval(model)
 
     return test_loss, (correct/len(testing_data.dataset))
 
@@ -337,7 +299,8 @@ def formatAndFold():
     kfold = StratifiedKFold(n_splits=ksplits, shuffle=True)
     for train_index, test_index in kfold.split(smiles_train, labels_train):
         #changed from 64
-        model = LSTM(124, 3)
+        #define model here
+        model = RNN(1024, 124, 1)
         #change to Adam
         optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=l2_weight_decay)
         scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.8, total_iters=300)
@@ -390,7 +353,8 @@ def formatAndTrain():
     learning_rate = .000089
     l2_weight_decay = 0.001
 
-    model = LSTM(124, 3)
+    #make sure to use most recent model architecture. ref above
+    model = RNN(1024, 100, 1)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=l2_weight_decay)
     scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1.0, end_factor=0.8, total_iters=300)
     loss_fn = torch.nn.BCELoss()
@@ -410,10 +374,8 @@ def formatAndTrain():
 
     print(f'LOSS: {loopLoss} ACC: {loopAcc}')
 
-
 def doFinalEval(model):
-    dataset = pd.read_csv('Data/RB_val.csv')
-    #dataset = pd.read_csv('Data/RB_train.csv')
+    dataset = pd.read_csv('Data/RB_Final.csv')
     print('len dataset currently is ', dataset)
     smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
     smilesID, _ = get_array(smiles_split)
@@ -471,73 +433,4 @@ def doFinalEval(model):
 
     print(f'FINAL EVALUATION: LOSS: {test_loss}, ACCURACY: {accuracy}, PRECISION: {precision}, RECALL: {recall}, F1: {f1}')
 
-
-def itsevaluation():
-    d = pd.read_csv('Data/RB_Final.csv')
-    m = LSTM(124, 3)
-    m.load_state_dict(torch.load('Models/trainedRB3.pkl', map_location=torch.device('cpu')), strict=False)
-    print('len dataset currently is ', d)
-    smiles_split = [split(sm) for sm in d['processed_smiles'].values]
-    smilesID, _ = get_array(smiles_split)
-    smiles = trfm.encode(torch.t(smilesID))
-    labels = d['Class'].values
-
-    train_dataset = pd.read_csv('Data/RB_train.csv')
-    smiles_split_train = [split(sm) for sm in train_dataset['processed_smiles'].values]
-    smilesID_train, _ = get_array(smiles_split_train)
-    smiles_train = trfm.encode(torch.t(smilesID_train))
-    labels_train = train_dataset['Class'].values
-
-    tdata = biodegradeDataset(smiles, labels)
-    # batch size defaults to 1
-    tloader = DataLoader(
-        dataset=tdata,
-        batch_size=1
-    )
-
-    training_data = biodegradeDataset(smiles_train, labels_train)
-    train_loader = DataLoader(
-        dataset=training_data
-    )
-
-    m.eval()
-    bceLoss = torch.nn.BCELoss()
-
-    all_labels = []
-    all_predictions = []
-    runningLoss = []
-    test_loss = 0
-    correct = 0
-    total_validation_records = 0
-
-    with torch.no_grad():
-        for i, (inputs, labels) in enumerate(train_loader):
-            i += 1
-            total_validation_records += labels.size(0)
-            outputs = m(inputs)
-            outputs = outputs.to(torch.float64)
-            labels = labels.to(torch.float64)
-            labels = labels.unsqueeze(1)
-            loss = bceLoss(outputs, labels)
-            runningLoss.append(loss.item())
-
-            predicted = torch.round(outputs)
-            correct += (predicted == labels).sum().item()
-
-            all_labels.extend(labels.view(-1).tolist())
-            all_predictions.extend(predicted.view(-1).tolist())
-
-            if i % 10 == 0:
-                print(i, " loss is ", np.mean(runningLoss))
-                print(i, " accuracy is ", correct / i)
-                print(" ")
-    test_loss = np.mean(runningLoss)
-    accuracy = correct / len(tdata)
-    precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_predictions, average='binary')
-
-    print(
-        f'FINAL EVALUATION: LOSS: {test_loss}, ACCURACY: {accuracy}, PRECISION: {precision}, RECALL: {recall}, F1: {f1}')
-
-#formatAndFold()
-#formatAndTrain()
-# itsevaluation()
+formatAndFold()
