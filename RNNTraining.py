@@ -389,71 +389,63 @@ def formatAndTrain():
     print(f'LOSS: {loopLoss} ACC: {loopAcc}')
 
 def doFinalEval(model):
-    # Use testing dataset for final evaluation
-    testingDataset = pd.read_csv('Data/RB_Final.csv')
-    print('len dataset currently is ', testingDataset)
-    smiles_split = [split(sm) for sm in testingDataset['processed_smiles'].values]
+    dataset = pd.read_csv('Data/RB_Final.csv')
+    print('len dataset currently is ', dataset)
+    smiles_split = [split(sm) for sm in dataset['processed_smiles'].values]
     smilesID, _ = get_array(smiles_split)
     smiles = trfm.encode(torch.t(smilesID))
     labels = dataset['Class'].values
 
-    # Load into biodegradableDataset object in order to feed into model
     testing_data = biodegradeDataset(smiles, labels)
+    #batch size defaults to 1
     test_loader = DataLoader(
         dataset=testing_data,
-        batch_size=1
+        batch_size=84
     )
 
-    # Set model to evaluation mode
     model.eval()
-    # Define loss function as Binary Cross Entropy
     loss_fn = torch.nn.BCELoss()
 
-    # Define metrics
-    all_labels, all_predictions = [], []
+    all_labels = []
+    all_predictions = []
     runningLoss = []
     test_loss = 0
     correct = 0
     total_validation_records = 0
 
     with torch.no_grad():
-        # Go through testing dataset
         for i, (inputs, labels) in enumerate(test_loader):
-            # Print out evaluation metrics as data is being processed
             i += 1
             print('-------------------', i, '-------------------')
             total_validation_records += labels.size(0)
-            # Get predictions from model
+            # print('inputs are ', inputs)
+            # print('labels are ', labels)
             outputs = model(inputs)
-            # Resize and reformat data in order to calculate loss
+            # print('outputs are ', outputs)
+            outputs = model(inputs)
+            # print(outputs)
             outputs = outputs.to(torch.float64)
             labels = labels.to(torch.float64)
             labels = labels.unsqueeze(1)
-            # Calculate loss
             loss = loss_fn(outputs, labels)
-            # Add loss from prediction to running tab
             runningLoss.append(loss.item())
 
-            # Round predictions to the nearest int (0 or 1)
             predicted = torch.round(outputs)
-            # Find whether predictions were correct or not, increase # of correct labels if correct
+            # print('predicted is ', predicted, ' labels is ', labels)
             correct += (predicted == labels).sum().item()
 
-            # Increase total # of labels and predictions processed/created
             all_labels.extend(labels.view(-1).tolist())
             all_predictions.extend(predicted.view(-1).tolist())
 
-            # Print running metrics every 10 predictions (average of the last 10 predictions)
-            print('hello. i is', i)
             if i % 10 == 0:
                 print(i, " loss is ", np.mean(runningLoss))
                 print(i, " accuracy is ", correct / i)
                 print(" ")
-    # Calculate averages for final metrics
     test_loss = np.mean(runningLoss)
     accuracy = correct / len(testing_data)
     precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_predictions, average='binary')
 
     print(f'FINAL EVALUATION: LOSS: {test_loss}, ACCURACY: {accuracy}, PRECISION: {precision}, RECALL: {recall}, F1: {f1}')
+
 
 formatAndTrain()
