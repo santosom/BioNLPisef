@@ -17,9 +17,8 @@ from Scripts import build_vocab
 class RNN(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super().__init__()
-
         self.rnn = nn.RNN(input_size, hidden_size, num_layers=2, dropout=0.3, nonlinearity='relu')
-        self.dropout = nn.Dropout(0.3)
+        self.dropout = nn.Dropout(0.5)
         self.linear = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
